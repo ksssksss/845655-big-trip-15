@@ -12,43 +12,44 @@ const createOfferTemplate = (offerData) => {
 };
 
 const createOffersTemplate = (offersArray) => {
-  if (offersArray.length !== 0) {
-    const offersList = offersArray.reduce((accumulator, currentValue) => `${accumulator} ${createOfferTemplate(currentValue)}`, ' ');
-    return `<section class="event__section  event__section--offers">
-      <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+  const offersList = offersArray.map((value) => createOfferTemplate(value)).join(' ');
+  return `<section class="event__section  event__section--offers">
+    <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
-      <div class="event__available-offers">
-        ${offersList}
-      </div>
+    <div class="event__available-offers">
+      ${offersList}
+    </div>
   </section>`;
-  }
-  return '';
 };
 
-const createDescriptionTemplate = (description) => {
-  if (description) {
-    return `<section class="event__section  event__section--destination">
-      <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-      <p class="event__destination-description">${description}</p>
-  </section>`;
-  }
-  return '';
-};
+const createDescriptionTemplate = (description) => (
+  `<section class="event__section  event__section--destination">
+    <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+    <p class="event__destination-description">${description}</p>
+  </section>`
+);
 
 const createPictureTemplate = (pictureSrc) => (
   `<img class="event__photo" src="${pictureSrc}" alt="Event photo">`
 );
 
 const createPicturesTemplate = (picturesArray) => {
-  if (picturesArray !== 0) {
-    const picturesList = picturesArray.reduce((accumulator, currentValue) => `${accumulator} ${createPictureTemplate(currentValue)}`, ' ');
-    return `<div class="event__photos-container">
-      <div class="event__photos-tape">
-        ${picturesList}
-      </div>
+  const picturesList = picturesArray.map((value) => createPictureTemplate(value)).join(' ');
+  return `<div class="event__photos-container">
+    <div class="event__photos-tape">
+      ${picturesList}
+    </div>
   </div>`;
+};
+
+const setOperationTemplate = (operation) => {
+  switch (operation) {
+    case 'edit':
+      return 'Delete';
+
+    case 'new':
+      return 'Cancel';
   }
-  return '';
 };
 
 export const createNewEditPointTemplate = (event, operation) => {
@@ -62,25 +63,12 @@ export const createNewEditPointTemplate = (event, operation) => {
     pictures,
   } = event;
 
-  const offersList = createOffersTemplate(offers);
+  const offersList = offers.length !== 0 ? createOffersTemplate(offers) : '';
   const startData = dateTime.dateStart.format('DD/MM/YY HH:mm');
   const endData = dateTime.dateEnd.format('DD/MM/YY HH:mm');
-  const descriptionText = createDescriptionTemplate(description);
-  const picturesList = createPicturesTemplate(pictures);
-  let eventControls = ''; // изменение шаблона event взависимости от operation: new event / edit event
-
-  switch (operation) {
-    case 'edit':
-      eventControls = `<button class="event__reset-btn" type="reset">Delete</button>
-      <button class="event__rollup-btn" type="button">
-        <span class="visually-hidden">Open event</span>
-      </button>`;
-      break;
-
-    case 'new':
-      eventControls = '<button class="event__reset-btn" type="reset">Cancel</button>';
-      break;
-  }
+  const descriptionText = description ? createDescriptionTemplate(description) : '';
+  const picturesList = pictures.length !== 0 ? createPicturesTemplate(pictures): '';
+  const eventControls = setOperationTemplate(operation); // изменение шаблона event взависимости от operation: new event / edit event
 
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -178,7 +166,10 @@ export const createNewEditPointTemplate = (event, operation) => {
         </div>
 
         <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-        ${eventControls}
+        <button class="event__reset-btn" type="reset">${eventControls}</button>
+        <button class="event__rollup-btn" type="button">
+          <span class="visually-hidden">Open event</span>
+        </button>
       </header>
       <section class="event__details">
         ${offersList}

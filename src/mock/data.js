@@ -6,6 +6,8 @@ const MAX_SENTENSE_COUNT = 5;
 const MIN_PHOTOS_COUNT = 1;
 const MAX_PHOTOS_COUNT = 5;
 
+let currentId = 0;
+
 const getRandomInteger = (minNumber, maxNumber) => {
   const a = Math.ceil(Math.min(Math.abs(minNumber), Math.abs(maxNumber)));
   const b = Math.floor(Math.max(Math.abs(minNumber), Math.abs(maxNumber)));
@@ -187,13 +189,14 @@ const generateEventData = () => {
   const duration = getRandomInteger(10, 4320);
 
   return {
+    id: ++currentId,
     eventType,
     destinationCity: getRandomCity(),
     dateTime: {
       dateStart: dateStart,
       dateEnd: dateStart.add(duration, 'minute'),
     },
-    price: getRandomInteger(60, 60000),
+    price: getRandomInteger(60, 900),
     offers: generateOffersList(eventType),
     description: generateDescription(),
     pictures: generatePictures(),

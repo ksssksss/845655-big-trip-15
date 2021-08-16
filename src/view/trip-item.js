@@ -1,4 +1,4 @@
-import dayjs from 'dayjs';
+import {calculateDuration} from '../utils/date.js';
 
 const createOfferTemplate = (offerData) => {
   const {name, price} = offerData;
@@ -10,22 +10,6 @@ const createOfferTemplate = (offerData) => {
   </li>`;
 };
 
-const formattingTime = (date) => date !== null
-  ? dayjs(date).format('HH:mm')
-  : '';
-
-const createOffersListTamplate = (offersArray) => offersArray.reduce((accumulator, value) => `${accumulator} ${createOfferTemplate(value)}`, ' ');
-
-const calculateDuration = (start, end) => {
-  const minutes = dayjs(end).diff(dayjs(start), 'minute');
-  const days = Math.floor(minutes / (60*24));
-  const hours = Math.floor(minutes % (60*24) / 60);
-  const min = Math.floor(minutes % 60);
-  const duration = days === 0 ? `${hours}H ${min}M` : `${days}D ${hours}H ${min}M`;
-  return duration;
-};
-// --------------------- //
-
 export const createTripItemTemplate = (event) => {
   const {
     eventType,
@@ -33,17 +17,15 @@ export const createTripItemTemplate = (event) => {
     dateTime,
     price,
     offers,
-    // description,
-    // pictures,
     isFavorite,
   } = event;
 
   const startData = dateTime.dateStart.format('YYYY-MM-DD');
   const startDataTime = dateTime.dateStart.format('YYYY-MM-DDTHH:mm');
   const endDataTime = dateTime.dateEnd.format('YYYY-MM-DDTHH:mm');
-  const offersList = createOffersListTamplate(offers);
-  const startTime = formattingTime(dateTime.dateStart);
-  const endTime = formattingTime(dateTime.dateEnd);
+  const offersList = offers.map((value) => createOfferTemplate(value)).join(' ');
+  const startTime = dateTime.dateStart.format('HH:mm');
+  const endTime = dateTime.dateEnd.format('HH:mm');
   const startDate = dateTime.dateStart.format('MMM DD');
   const duration = calculateDuration(dateTime.dateStart, dateTime.dateEnd);
   const favotiteClass = isFavorite ? 'event__favorite-btn--active' : '';
