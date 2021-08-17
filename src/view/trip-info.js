@@ -1,9 +1,29 @@
-export const createTripInfoTemplate = () => (
+import dayjs from 'dayjs';
+
+const createTripDatesTemplate = (startDate, endDate) => {
+  const startDateFormat = 'MMM DD';
+  const endDateFormat = dayjs(startDate).month() === dayjs(endDate).month()
+    ? 'DD'
+    : 'MMM DD';
+
+  return `<p class="trip-info__dates">${startDate.format(startDateFormat)}&nbsp;&mdash;&nbsp;${endDate.format(endDateFormat)}</p>`;
+};
+
+const createRouteTemplate = (sortedEvents) => {
+  const cities = sortedEvents.map((event) => event.destinationCity);
+  if (cities.length > 3) {
+    return `<h1 class="trip-info__title">${cities[0]} &mdash; ... &mdash; ${cities[cities.length-1]}</h1>`;
+  } else {
+    return `<h1 class="trip-info__title">${cities.map((city) => city).join(' &mdash; ')}</h1>`;
+  }
+};
+
+export const createTripInfoTemplate = (sortedEvents) => (
   `<section class="trip-main__trip-info  trip-info">
     <div class="trip-info__main">
-     <h1 class="trip-info__title">Amsterdam &mdash; Chamonix &mdash; Geneva</h1>
+      ${createRouteTemplate(sortedEvents)}
 
-      <p class="trip-info__dates">Mar 18&nbsp;&mdash;&nbsp;20</p>
+      ${createTripDatesTemplate(sortedEvents[0].dateTime.dateStart, sortedEvents[sortedEvents.length-1].dateTime.dateEnd)}
     </div>
   </section>`
 );

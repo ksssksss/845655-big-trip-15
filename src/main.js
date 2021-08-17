@@ -1,27 +1,29 @@
+import {render} from './utils/render.js';
 import {createTripInfoTemplate} from './view/trip-info.js';
-import {createCostInfoTemplate} from './view/cost.js';
+import {createCostInfoTemplate, calculateCost} from './view/cost.js';
 import {createMenuTemplate} from './view/menu.js';
 import {createFiltersTemplate} from './view/filters.js';
 import {createSortTemplate} from './view/sort.js';
 import {createPointsListTemplate} from './view/points-list.js';
-import {createEditPointTemplate} from './view/edit-point.js';
+import {createNewEditPointTemplate} from './view/point-edit';
 import {createTripItemTemplate} from './view/trip-item.js';
+import {events} from './mock/data.js';
 
-const POINT_COUNT = 3;
+// Вычисление общей стоймости
+const cost = calculateCost(events);
 
-const render = (container, template, place) => {
-  container.insertAdjacentHTML(place, template);
-};
+// Сортировка элементов
+const sortedEvents = events.sort((a, b) => a.dateTime.dateStart.toDate().getTime() - b.dateTime.dateStart.toDate().getTime());
 
 const headerTripMainElement = document.querySelector('.trip-main');
 const headerMenuElement = headerTripMainElement.querySelector('.trip-controls__navigation');
 const headerFiltersElement = headerTripMainElement.querySelector('.trip-controls__filters');
 const mainTripEventsElement = document.querySelector('.trip-events');
 
-render(headerTripMainElement, createTripInfoTemplate(), 'afterbegin');
+render(headerTripMainElement, createTripInfoTemplate(sortedEvents), 'afterbegin');
 
 const headerTripInfoElement = headerTripMainElement.querySelector('.trip-info');
-render(headerTripInfoElement, createCostInfoTemplate(), 'beforeend');
+render(headerTripInfoElement, createCostInfoTemplate(cost), 'beforeend');
 
 render(headerMenuElement, createMenuTemplate(), 'afterend');
 render(headerFiltersElement, createFiltersTemplate(), 'afterend');
@@ -30,9 +32,12 @@ render(mainTripEventsElement, createSortTemplate(), 'afterbegin');
 render(mainTripEventsElement, createPointsListTemplate(), 'beforeend');
 
 const mainPointsList = mainTripEventsElement.querySelector('.trip-events__list');
-render(mainPointsList, createEditPointTemplate(), 'beforeend');
-for (let i = 0; i < POINT_COUNT; i++) {
-  render(mainPointsList, createTripItemTemplate(), 'beforeend');
+render(mainPointsList, createNewEditPointTemplate(sortedEvents[0], 'edit'), 'beforeend');
+
+for (let i = 1; i < sortedEvents.length - 1; i++) {
+  render(mainPointsList, createTripItemTemplate(sortedEvents[i]), 'beforeend');
 }
+
+render(mainPointsList, createNewEditPointTemplate(sortedEvents[sortedEvents.length - 1], 'new'), 'beforeend');
 
 
