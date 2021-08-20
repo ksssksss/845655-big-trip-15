@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import {createElement} from '../utils/render.js';
 
 const createTripDatesTemplate = (startDate, endDate) => {
   const startDateFormat = 'MMM DD';
@@ -9,8 +10,8 @@ const createTripDatesTemplate = (startDate, endDate) => {
   return `<p class="trip-info__dates">${startDate.format(startDateFormat)}&nbsp;&mdash;&nbsp;${endDate.format(endDateFormat)}</p>`;
 };
 
-const createRouteTemplate = (sortedEvents) => {
-  const cities = sortedEvents.map((event) => event.destinationCity);
+const createRouteTemplate = (events) => {
+  const cities = events.map((event) => event.destinationCity);
   if (cities.length > 3) {
     return `<h1 class="trip-info__title">${cities[0]} &mdash; ... &mdash; ${cities[cities.length-1]}</h1>`;
   } else {
@@ -18,7 +19,7 @@ const createRouteTemplate = (sortedEvents) => {
   }
 };
 
-export const createTripInfoTemplate = (sortedEvents) => (
+const createTripInfoTemplate = (sortedEvents) => (
   `<section class="trip-main__trip-info  trip-info">
     <div class="trip-info__main">
       ${createRouteTemplate(sortedEvents)}
@@ -27,3 +28,25 @@ export const createTripInfoTemplate = (sortedEvents) => (
     </div>
   </section>`
 );
+
+export default class TripInfo {
+  constructor (events) {
+    this._events = events;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTripInfoTemplate(this._events);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

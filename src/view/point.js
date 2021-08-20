@@ -1,4 +1,5 @@
 import {calculateDuration} from '../utils/date.js';
+import {createElement} from '../utils/render.js';
 
 const createOfferTemplate = (offerData) => {
   const {name, price} = offerData;
@@ -10,7 +11,7 @@ const createOfferTemplate = (offerData) => {
   </li>`;
 };
 
-export const createTripItemTemplate = (event) => {
+const createPointTemplate = (event) => {
   const {
     eventType,
     destinationCity,
@@ -65,3 +66,25 @@ export const createTripItemTemplate = (event) => {
     </div>
   </li>`;
 };
+
+export default class Point {
+  constructor (event) {
+    this._event = event;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createPointTemplate(this._event);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

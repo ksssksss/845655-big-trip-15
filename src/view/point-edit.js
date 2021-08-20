@@ -1,3 +1,24 @@
+import {createElement} from '../utils/render.js';
+import dayjs from 'dayjs';
+
+export const OperationType = {
+  NEW: 'new',
+  EDIT: 'edit',
+};
+
+const BLANK_POINT = {
+  eventType: 'Taxi',
+  destinationCity: '', // получаем список возможных с сервера
+  dateTime: {
+    dateStart: dayjs(),
+    dateEnd: dayjs(),
+  },
+  price: 0,
+  offers: [], // получаем список возможных с сервера
+  description: '',
+  pictures: [],
+};
+
 const createOfferTemplate = (offerData) => {
   const {name, price} = offerData;
 
@@ -52,7 +73,7 @@ const setOperationTemplate = (operation) => {
   }
 };
 
-export const createNewEditPointTemplate = (event, operation) => {
+const createNewEditPointTemplate = (operation, event) => {
   const {
     eventType,
     destinationCity,
@@ -179,3 +200,26 @@ export const createNewEditPointTemplate = (event, operation) => {
     </form>
   </li>`;
 };
+
+export default class NewEditPoint {
+  constructor(operation, event = BLANK_POINT) {
+    this._event = event;
+    this._operation = operation;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createNewEditPointTemplate(this._operation, this._event);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
