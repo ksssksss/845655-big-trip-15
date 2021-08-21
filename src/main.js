@@ -65,25 +65,21 @@ const renderPoint = (pointListElement, point) => {
 
 const renderEventsContent = (mainContentContainer, eventPoints) => {
   if (eventPoints.length === 0) {
-    render(mainContentContainer, new NoEventsView().getElement(), RenderPosition.AFTERBEGIN);
-  } else {
-    const mainPointsList = new PointsListView(); // '.trip-events__list'
-    const headerTripInfoElement = new TripInfoView(eventPoints); // '.trip-info'
-    // HEADER
-    render(headerTripMainElement, headerTripInfoElement.getElement(), RenderPosition.AFTERBEGIN);
-    render(headerTripInfoElement.getElement(), new CostView(eventPoints).getElement(), RenderPosition.BEFOREEND);
-    // MAIN
-    render(mainContentContainer, new SortView().getElement(), RenderPosition.AFTERBEGIN);
-    render(mainContentContainer, mainPointsList.getElement(), RenderPosition.BEFOREEND);
-    for (let i = 0; i < eventPoints.length; i++) {
-      renderPoint(mainPointsList.getElement(), eventPoints[i]);
-    }
-    render(mainPointsList.getElement(), new NewEditPointView(OperationType.NEW).getElement(), RenderPosition.BEFOREEND);
+    return render(mainContentContainer, new NoEventsView().getElement(), RenderPosition.AFTERBEGIN);
   }
+
+  const mainPointsList = new PointsListView(); // '.trip-events__list'
+  const headerTripInfoElement = new TripInfoView(eventPoints); // '.trip-info'
+  // HEADER
+  render(headerTripMainElement, headerTripInfoElement.getElement(), RenderPosition.AFTERBEGIN);
+  render(headerTripInfoElement.getElement(), new CostView(eventPoints).getElement(), RenderPosition.BEFOREEND);
+  // MAIN
+  render(mainContentContainer, new SortView().getElement(), RenderPosition.AFTERBEGIN);
+  render(mainContentContainer, mainPointsList.getElement(), RenderPosition.BEFOREEND);
+  eventPoints.forEach((point) => renderPoint(mainPointsList.getElement(), point));
+  render(mainPointsList.getElement(), new NewEditPointView(OperationType.NEW).getElement(), RenderPosition.BEFOREEND);
 };
 
 render(headerMenuElement, new MenuView().getElement(), RenderPosition.AFTEREND);
 render(headerFiltersElement, new FiltersView().getElement(), RenderPosition.AFTEREND);
 renderEventsContent(mainTripEventsElement, sortedEvents);
-
-
