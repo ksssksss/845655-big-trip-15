@@ -1,4 +1,3 @@
-import {render, RenderPosition} from './utils/render.js';
 import TripInfoView from './view/trip-info.js';
 import CostView from './view/cost.js';
 import MenuView from './view/menu.js';
@@ -10,7 +9,8 @@ import PointView from './view/point.js';
 import NoEventsView from './view/noEvents.js';
 import {OperationType} from './view/point-edit';
 import {events} from './mock/data.js';
-import {isEscEvent} from './utils/utils.js';
+import {render, replace, RenderPosition} from './utils/render.js';
+import {isEscEvent} from './utils/common.js';
 
 // Сортировка элементов
 const sortedEvents = events.sort((a, b) => a.dateTime.dateStart.toDate().getTime() - b.dateTime.dateStart.toDate().getTime());
@@ -27,11 +27,11 @@ const renderPoint = (pointListElement, point) => {
   const pointEditComponent = new NewEditPointView(OperationType.EDIT, point);
 
   const replaceCardToFrom = () => {
-    pointListElement.replaceChild(pointEditComponent.getElement(), pointComponent.getElement());
+    replace(pointEditComponent, pointComponent);
   };
 
   const replaceFormToCard = () => {
-    pointListElement.replaceChild(pointComponent.getElement(), pointEditComponent.getElement());
+    replace(pointComponent, pointEditComponent);
   };
 
   const onEscKeydown = (evt) => {
@@ -41,45 +41,41 @@ const renderPoint = (pointListElement, point) => {
     }
   };
 
-  const onPointFormSubmit = (evt) => {
-    evt.preventDefault();
+  pointEditComponent.setOnPointFormSubmit(() => {
     replaceFormToCard();
     document.removeEventListener('keydown', onEscKeydown);
-  };
+  });
 
-  const onRollupBtnClick = () => {
+  pointEditComponent.setOnRollupBtnClick(() => {
     replaceFormToCard();
     document.removeEventListener('keydown', onEscKeydown);
-  };
+  });
 
-  pointEditComponent.getElement().querySelector('form').addEventListener('submit', onPointFormSubmit);
-  pointEditComponent.getElement().querySelector('.event__rollup-btn').addEventListener('click', onRollupBtnClick);
-
-  pointComponent.getElement().querySelector('.event__rollup-btn').addEventListener('click', () => {
+  pointComponent.setOnEditBtnClick(() => {
     replaceCardToFrom();
     document.addEventListener('keydown', onEscKeydown);
   });
 
-  render(pointListElement, pointComponent.getElement(), RenderPosition.BEFOREEND);
+  render(pointListElement, pointComponent, RenderPosition.BEFOREEND);
 };
 
 const renderEventsContent = (mainContentContainer, eventPoints) => {
   if (eventPoints.length === 0) {
-    return render(mainContentContainer, new NoEventsView().getElement(), RenderPosition.AFTERBEGIN);
+    return render(mainContentContainer, new NoEventsView(), RenderPosition.AFTERBEGIN);
   }
 
   const mainPointsList = new PointsListView(); // '.trip-events__list'
   const headerTripInfoElement = new TripInfoView(eventPoints); // '.trip-info'
   // HEADER
-  render(headerTripMainElement, headerTripInfoElement.getElement(), RenderPosition.AFTERBEGIN);
-  render(headerTripInfoElement.getElement(), new CostView(eventPoints).getElement(), RenderPosition.BEFOREEND);
+  render(headerTripMainElement, headerTripInfoElement, RenderPosition.AFTERBEGIN);
+  render(headerTripInfoElement, new CostView(eventPoints), RenderPosition.BEFOREEND);
   // MAIN
-  render(mainContentContainer, new SortView().getElement(), RenderPosition.AFTERBEGIN);
-  render(mainContentContainer, mainPointsList.getElement(), RenderPosition.BEFOREEND);
-  eventPoints.forEach((point) => renderPoint(mainPointsList.getElement(), point));
-  render(mainPointsList.getElement(), new NewEditPointView(OperationType.NEW).getElement(), RenderPosition.BEFOREEND);
+  render(mainContentContainer, new SortView(), RenderPosition.AFTERBEGIN);
+  render(mainContentContainer, mainPointsList, RenderPosition.BEFOREEND);
+  eventPoints.forEach((point) => renderPoint(mainPointsList, point));
+  render(mainPointsList, new NewEditPointView(OperationType.NEW), RenderPosition.BEFOREEND);
 };
 
-render(headerMenuElement, new MenuView().getElement(), RenderPosition.AFTEREND);
-render(headerFiltersElement, new FiltersView().getElement(), RenderPosition.AFTEREND);
+render(headerMenuElement, new MenuView(), RenderPosition.AFTEREND);
+render(headerFiltersElement, new FiltersView(), RenderPosition.AFTEREND);
 renderEventsContent(mainTripEventsElement, sortedEvents);

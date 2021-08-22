@@ -1,4 +1,4 @@
-import {createElement} from '../utils/render.js';
+import AbstractView from './abstract.js';
 import dayjs from 'dayjs';
 
 export const OperationType = {
@@ -201,25 +201,36 @@ const createNewEditPointTemplate = (operation, event) => {
   </li>`;
 };
 
-export default class NewEditPoint {
+export default class NewEditPoint extends AbstractView {
   constructor(operation, event = BLANK_POINT) {
+    super();
     this._event = event;
     this._operation = operation;
-    this._element = null;
+
+    this._onPointFormSubmit = this._onPointFormSubmit.bind(this);
+    this._onRollupBtnClick = this._onRollupBtnClick.bind(this);
+  }
+
+  _onPointFormSubmit(evt) {
+    evt.preventDefault();
+    this._callback.submitForm();
+  }
+
+  _onRollupBtnClick() {
+    this._callback.rollupForm();
   }
 
   getTemplate() {
     return createNewEditPointTemplate(this._operation, this._event);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-    return this._element;
+  setOnPointFormSubmit(callback) {
+    this._callback.submitForm = callback;
+    this.getElement().querySelector('form').addEventListener('submit', this._onPointFormSubmit);
   }
 
-  removeElement() {
-    this._element = null;
+  setOnRollupBtnClick(callback) {
+    this._callback.rollupForm = callback;
+    this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._onRollupBtnClick);
   }
 }

@@ -1,5 +1,5 @@
 import {calculateDuration} from '../utils/date.js';
-import {createElement} from '../utils/render.js';
+import AbstractView from './abstract.js';
 
 const createOfferTemplate = (offerData) => {
   const {name, price} = offerData;
@@ -67,24 +67,24 @@ const createPointTemplate = (event) => {
   </li>`;
 };
 
-export default class Point {
+export default class Point extends AbstractView {
   constructor (event) {
+    super();
     this._event = event;
-    this._element = null;
+
+    this._onEditBtnClick = this._onEditBtnClick.bind(this);
+  }
+
+  _onEditBtnClick() {
+    this._callback.editPoint();
   }
 
   getTemplate() {
     return createPointTemplate(this._event);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
+  setOnEditBtnClick(callback) {
+    this._callback.editPoint = callback;
+    this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._onEditBtnClick);
   }
 }
