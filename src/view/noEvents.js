@@ -1,4 +1,4 @@
-import {createElement} from '../utils/render.js';
+import AbstractView from './abstract.js';
 
 /* Значение отображаемого текста зависит от выбранного фильтра:
       * Everthing – 'Click New Event to create your first point'
@@ -9,24 +9,9 @@ const createNoEventsTemplate = () => (
   '<p class="trip-events__msg">Click New Event to create your first point</p>'
 );
 
-export default class noEvents {
-  constructor() {
-    this._element = null;
-  }
-
+export default class noEvents extends AbstractView {
   getTemplate() {
     return createNoEventsTemplate();
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
 
