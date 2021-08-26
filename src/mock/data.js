@@ -1,12 +1,11 @@
 import dayjs from 'dayjs';
+import { nanoid } from 'nanoid';
 
 const EVENTS_COUNT = 15;
 
 const MAX_SENTENSE_COUNT = 5;
 const MIN_PHOTOS_COUNT = 1;
 const MAX_PHOTOS_COUNT = 5;
-
-let currentId = 0;
 
 const getRandomInteger = (minNumber, maxNumber) => {
   const a = Math.ceil(Math.min(Math.abs(minNumber), Math.abs(maxNumber)));
@@ -189,7 +188,7 @@ const generateEventData = () => {
   const duration = getRandomInteger(10, 4320);
 
   return {
-    id: ++currentId,
+    id: nanoid(),
     eventType,
     destinationCity: getRandomCity(),
     dateTime: {
