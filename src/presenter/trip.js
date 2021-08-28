@@ -1,37 +1,33 @@
-import TripInfoView from '../view/trip-info.js';
 import PointsListView from '../view/points-list.js';
 import NoEventsView from '../view/noEvents.js';
-import CostView from '../view/cost.js';
 import SortView from '../view/sort.js';
-import MenuView from '../view/menu.js';
-import FiltersView from '../view/filters.js';
 import {render, RenderPosition} from '../utils/render.js';
 import PointPresenter from './point.js';
 import {updateItem} from '../utils/common.js';
+import {SortType} from '../utils/const.js';
+import {sortByDateUp, sortByDurationDown, sortByPriceDown} from '../utils/sort.js';
 
 export default class Trip {
   constructor(mainContentContainer) {
     this._mainContentContainer = mainContentContainer;
-    this._headerTripMainElement = document.querySelector('.trip-main');
     this._pointPresenter = new Map(); // для хранения созданный pointPresenter'ов
+    this._currentSortType = SortType.DAY;
 
     this._mainPointsList = new PointsListView();
     this._sortComponent = new SortView();
-    this._menuComponent = new MenuView();
-    this._filterComponent = new FiltersView();
     this._noEventView = new NoEventsView();
-    this._headerTripInfoElement = null;
-    this._costComponent = null;
 
     this._handlePointChange = this._handlePointChange.bind(this);
     this._handleModeChange = this._handleModeChange.bind(this);
+    this._handleSortTypeChange = this._handleSortTypeChange.bind(this);
   }
 
   init(eventPoints) {
     this._eventPoints = eventPoints.slice();
+    this._sourceEventPoints = eventPoints.slice();
 
-    this._renderMenu();
-    this._renderFilter();
+    // сохраняем исходный порядок
+
     this._renderList(this._eventPoints);
   }
 
@@ -41,7 +37,6 @@ export default class Trip {
       return this._renderNoEvents();
     }
 
-    this._renderTripMainInfo();
     this._renderSort();
     this._renderEvents(events);
   }
@@ -61,26 +56,28 @@ export default class Trip {
     this._pointPresenter.set(event.id, pointPresenter);
   }
 
-  _renderMenu() {
-    const headerMenuElement = this._headerTripMainElement.querySelector('.trip-controls__navigation');
-    render(headerMenuElement, this._menuComponent, RenderPosition.AFTEREND);
-  }
-
-  _renderFilter() {
-    const headerFiltersElement = this._headerTripMainElement.querySelector('.trip-controls__filters');
-    render(headerFiltersElement, this._filterComponent, RenderPosition.AFTEREND);
-  }
-
-  _renderTripMainInfo() {
-    // рендер TripInfo и Cost
-    this._headerTripInfoElement = new TripInfoView(this._eventPoints);
-    this._costComponent = new CostView(this._eventPoints);
-    render(this._headerTripMainElement, this._headerTripInfoElement, RenderPosition.AFTERBEGIN);
-    render(this._headerTripInfoElement, this._costComponent, RenderPosition.BEFOREEND);
-  }
-
   _renderSort() {
     render(this._mainContentContainer, this._sortComponent, RenderPosition.AFTERBEGIN);
+    this._sortComponent.setSortTypeChangeHandler(this._handleSortTypeChange);
+  }
+
+  _sortEvents(sortType) {
+    switch(sortType){
+      case `sort-${SortType.DAY}`:
+        this._eventPoints.sort(sortByDateUp);
+        this._currentSortType = SortType.DAY;
+        break;
+
+      case `sort-${SortType.TIME}`:
+        this._eventPoints.sort(sortByDurationDown);
+        this._currentSortType = SortType.TIME;
+        break;
+
+      case `sort-${SortType.PRICE}`:
+        this._eventPoints.sort(sortByPriceDown);
+        this._currentSortType = SortType.PRICE;
+        break;
+    }
   }
 
   _clearPointsList() {
@@ -93,7 +90,19 @@ export default class Trip {
   }
 
   _handlePointChange(updatedPoint) {
-    this._eventPoints = updateItem(this._eventPoints, updatedPoint);
     this._pointPresenter.get(updatedPoint.id).init(updatedPoint);
+    this._eventPoints = updateItem(this._eventPoints, updatedPoint);
+    this._sourceEventPoints = updateItem(this._sourceEventPoints, updatedPoint);
+  }
+
+  _handleSortTypeChange(sortType) {
+    // Сортируем задачи
+    this._sortEvents(sortType);
+    this._clearPointsList();
+    this._renderEvents(this._eventPoints);
+
+    // Очищаем список
+    // Рендерим отсортированный список
+    // console.log('Sort Click!');
   }
 }
