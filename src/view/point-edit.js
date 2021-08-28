@@ -213,7 +213,7 @@ export default class NewEditPoint extends AbstractView {
 
   _onPointFormSubmit(evt) {
     evt.preventDefault();
-    this._callback.submitForm();
+    this._callback.submitForm(this._event);
   }
 
   _onRollupBtnClick() {

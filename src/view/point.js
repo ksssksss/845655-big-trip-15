@@ -73,10 +73,15 @@ export default class Point extends AbstractView {
     this._event = event;
 
     this._onEditBtnClick = this._onEditBtnClick.bind(this);
+    this._onFavoriteClick = this._onFavoriteClick.bind(this);
   }
 
   _onEditBtnClick() {
     this._callback.editPoint();
+  }
+
+  _onFavoriteClick() {
+    this._callback.favoriteClick();
   }
 
   getTemplate() {
@@ -86,5 +91,10 @@ export default class Point extends AbstractView {
   setOnEditBtnClick(callback) {
     this._callback.editPoint = callback;
     this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._onEditBtnClick);
+  }
+
+  setFavoriteClickHandler(callback) {
+    this._callback.favoriteClick = callback;
+    this.getElement().querySelector('.event__favorite-btn').addEventListener('click', this._onFavoriteClick);
   }
 }
