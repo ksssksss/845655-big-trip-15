@@ -1,5 +1,5 @@
-import dayjs from 'dayjs';
 import AbstractView from './abstract.js';
+import dayjs from 'dayjs';
 
 const createTripDatesTemplate = (startDate, endDate) => {
   const startDateFormat = 'MMM DD';

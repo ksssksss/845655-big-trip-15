@@ -1,5 +1,5 @@
-import {calculateDuration} from '../utils/date.js';
 import AbstractView from './abstract.js';
+import {calculateDuration} from '../utils/date.js';
 
 const createOfferTemplate = (offerData) => {
   const {name, price} = offerData;
@@ -72,15 +72,15 @@ export default class Point extends AbstractView {
     super();
     this._event = event;
 
-    this._onEditBtnClick = this._onEditBtnClick.bind(this);
-    this._onFavoriteClick = this._onFavoriteClick.bind(this);
+    this._editBtnClickHandler = this._editBtnClickHandler.bind(this);
+    this._favoriteClickHandler = this._favoriteClickHandler.bind(this);
   }
 
-  _onEditBtnClick() {
+  _editBtnClickHandler() {
     this._callback.editPoint();
   }
 
-  _onFavoriteClick() {
+  _favoriteClickHandler() {
     this._callback.favoriteClick();
   }
 
@@ -88,13 +88,13 @@ export default class Point extends AbstractView {
     return createPointTemplate(this._event);
   }
 
-  setOnEditBtnClick(callback) {
+  setEditBtnClickHandler(callback) {
     this._callback.editPoint = callback;
-    this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._onEditBtnClick);
+    this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._editBtnClickHandler);
   }
 
   setFavoriteClickHandler(callback) {
     this._callback.favoriteClick = callback;
-    this.getElement().querySelector('.event__favorite-btn').addEventListener('click', this._onFavoriteClick);
+    this.getElement().querySelector('.event__favorite-btn').addEventListener('click', this._favoriteClickHandler);
   }
 }

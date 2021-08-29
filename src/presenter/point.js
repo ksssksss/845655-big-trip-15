@@ -20,11 +20,11 @@ export default class Point {
     this._pointComponent = null;
     this._pointEditComponent = null;
 
-    this._handeleOnEscKeydown = this._handeleOnEscKeydown.bind(this);
+    this._handleOnEscKeydown = this._handleOnEscKeydown.bind(this);
     this._handleEditClick = this._handleEditClick.bind(this);
     this._handleFormSubmit = this._handleFormSubmit.bind(this);
     this._handleFavoriteClick = this._handleFavoriteClick.bind(this);
-    this._handeleFormClose = this._handeleFormClose.bind(this);
+    this._handleFormClose = this._handleFormClose.bind(this);
   }
 
   init(event) {
@@ -38,9 +38,9 @@ export default class Point {
     this._pointComponent = new PointView(this._event);
     this._pointEditComponent = new NewEditPointView(OperationType.EDIT, this._event);
 
-    this._pointEditComponent.setOnPointFormSubmit(this._handleFormSubmit);
-    this._pointEditComponent.setOnRollupBtnClick(this._handeleFormClose);
-    this._pointComponent.setOnEditBtnClick(this._handleEditClick);
+    this._pointEditComponent.setPointFormSubmitHandler(this._handleFormSubmit);
+    this._pointEditComponent.setRollupBtnClickHandler(this._handleFormClose);
+    this._pointComponent.setEditBtnClickHandler(this._handleEditClick);
     this._pointComponent.setFavoriteClickHandler(this._handleFavoriteClick);
 
 
@@ -70,44 +70,46 @@ export default class Point {
     remove(this._pointEditComponent);
   }
 
+  // Сброс point в состояние по умолчанию
   resetView() {
     if (this._mode !== Mode.DEFAULT) {
       this._replaceFormToCard();
+      document.removeEventListener('keydown', this._handleOnEscKeydown);
     }
   }
 
   _replaceCardToFrom() {
-    replace(this._pointEditComponent, this._pointComponent);
     this._changeMode(); // используем resetView() через TripPresenter в _changeMode (=_handleModeChange())
     this._mode = Mode.EDITTING;
+    replace(this._pointEditComponent, this._pointComponent);
   }
 
   _replaceFormToCard() {
-    replace(this._pointComponent, this._pointEditComponent);
     this._mode = Mode.DEFAULT;
+    replace(this._pointComponent, this._pointEditComponent);
   }
 
-  _handeleOnEscKeydown(evt) {
+  _handleOnEscKeydown(evt) {
     if (isEscEvent(evt)){
       this._replaceFormToCard();
-      document.removeEventListener('keydown', this._handeleOnEscKeydown);
+      document.removeEventListener('keydown', this._handleOnEscKeydown);
     }
   }
 
   _handleEditClick() {
     this._replaceCardToFrom();
-    document.addEventListener('keydown', this._handeleOnEscKeydown);
+    document.addEventListener('keydown', this._handleOnEscKeydown);
   }
 
   _handleFormSubmit(task) {
     this._changeData(task);
     this._replaceFormToCard();
-    document.removeEventListener('keydown', this._handeleOnEscKeydown);
+    document.removeEventListener('keydown', this._handleOnEscKeydown);
   }
 
-  _handeleFormClose() {
+  _handleFormClose() {
     this._replaceFormToCard();
-    document.removeEventListener('keydown', this._handeleOnEscKeydown);
+    document.removeEventListener('keydown', this._handleOnEscKeydown);
   }
 
   _handleFavoriteClick() {
