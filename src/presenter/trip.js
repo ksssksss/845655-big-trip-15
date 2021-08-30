@@ -1,11 +1,11 @@
+import PointPresenter from './point.js';
+import SortView from '../view/sort.js';
 import PointsListView from '../view/points-list.js';
 import NoEventsView from '../view/noEvents.js';
-import SortView from '../view/sort.js';
 import {render, RenderPosition} from '../utils/render.js';
-import PointPresenter from './point.js';
 import {updateItem} from '../utils/common.js';
-import {SortType} from '../utils/const.js';
 import {sortByDateUp, sortByDurationDown, sortByPriceDown} from '../utils/sort.js';
+import {SortType} from '../utils/const.js';
 
 export default class Trip {
   constructor(mainContentContainer) {
@@ -24,10 +24,7 @@ export default class Trip {
 
   init(eventPoints) {
     this._eventPoints = eventPoints.slice();
-    this._sourceEventPoints = eventPoints.slice();
-
-    // сохраняем исходный порядок
-
+    this._sourceEventPoints = eventPoints.slice(); // копируем исходный список элементов
     this._renderList(this._eventPoints);
   }
 
@@ -85,10 +82,12 @@ export default class Trip {
     this._pointPresenter.clear();
   }
 
+  // обработчик уведомления всех презентеров о смене режима (ставим всех в DEFAULT)
   _handleModeChange() {
     this._pointPresenter.forEach((point) => point.resetView());
   }
 
+  // обработчик изменений в задаче
   _handlePointChange(updatedPoint) {
     this._pointPresenter.get(updatedPoint.id).init(updatedPoint);
     this._eventPoints = updateItem(this._eventPoints, updatedPoint);
@@ -96,13 +95,8 @@ export default class Trip {
   }
 
   _handleSortTypeChange(sortType) {
-    // Сортируем задачи
     this._sortEvents(sortType);
     this._clearPointsList();
     this._renderEvents(this._eventPoints);
-
-    // Очищаем список
-    // Рендерим отсортированный список
-    // console.log('Sort Click!');
   }
 }

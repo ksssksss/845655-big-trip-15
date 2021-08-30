@@ -47,7 +47,6 @@ export default class Sort extends AbstractView {
     }
 
     evt.preventDefault();
-    // console.log(evt.target.value);
     this._callback.sortTypeChange(evt.target.value);
   }
 

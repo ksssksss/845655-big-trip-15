@@ -207,16 +207,16 @@ export default class NewEditPoint extends AbstractView {
     this._event = event;
     this._operation = operation;
 
-    this._onPointFormSubmit = this._onPointFormSubmit.bind(this);
-    this._onRollupBtnClick = this._onRollupBtnClick.bind(this);
+    this._pointFormSubmitHandler = this._pointFormSubmitHandler.bind(this);
+    this._rollupBtnClickHandler = this._rollupBtnClickHandler.bind(this);
   }
 
-  _onPointFormSubmit(evt) {
+  _pointFormSubmitHandler(evt) {
     evt.preventDefault();
     this._callback.submitForm(this._event);
   }
 
-  _onRollupBtnClick() {
+  _rollupBtnClickHandler() {
     this._callback.rollupForm();
   }
 
@@ -224,13 +224,13 @@ export default class NewEditPoint extends AbstractView {
     return createNewEditPointTemplate(this._operation, this._event);
   }
 
-  setOnPointFormSubmit(callback) {
+  setPointFormSubmitHandler(callback) {
     this._callback.submitForm = callback;
-    this.getElement().querySelector('form').addEventListener('submit', this._onPointFormSubmit);
+    this.getElement().querySelector('form').addEventListener('submit', this._pointFormSubmitHandler);
   }
 
-  setOnRollupBtnClick(callback) {
+  setRollupBtnClickHandler(callback) {
     this._callback.rollupForm = callback;
-    this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._onRollupBtnClick);
+    this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._rollupBtnClickHandler);
   }
 }
