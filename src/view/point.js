@@ -1,20 +1,28 @@
 import AbstractView from './abstract.js';
 import {calculateDuration} from '../utils/date.js';
 
-const createOfferTemplate = (offerData) => {
-  const {name, price} = offerData;
+const createSelectedOffersListTemplate = (offersArray) => {
+  let selectedOffersList = '';
 
-  return `<li class="event__offer">
-    <span class="event__offer-title">${name}</span>
-    &plus;&euro;&nbsp;
-    <span class="event__offer-price">${price}</span>
-  </li>`;
+  offersArray.forEach((offer) => {
+    if (offer.isChecked) {
+      selectedOffersList += `<li class="event__offer">
+      <span class="event__offer-title">${offer.title}</span>
+      &plus;&euro;&nbsp;
+      <span class="event__offer-price">${offer.price}</span>
+    </li>`;
+    }
+  });
+
+  return selectedOffersList;
 };
+
+// const createSelectedOffersList =
 
 const createPointTemplate = (event) => {
   const {
     eventType,
-    destinationCity,
+    destination,
     dateTime,
     price,
     offers,
@@ -24,7 +32,7 @@ const createPointTemplate = (event) => {
   const startData = dateTime.dateStart.format('YYYY-MM-DD');
   const startDataTime = dateTime.dateStart.format('YYYY-MM-DDTHH:mm');
   const endDataTime = dateTime.dateEnd.format('YYYY-MM-DDTHH:mm');
-  const offersList = offers.map((value) => createOfferTemplate(value)).join(' ');
+  const offersList = createSelectedOffersListTemplate(offers);
   const startTime = dateTime.dateStart.format('HH:mm');
   const endTime = dateTime.dateEnd.format('HH:mm');
   const startDate = dateTime.dateStart.format('MMM DD');
@@ -38,7 +46,7 @@ const createPointTemplate = (event) => {
       <div class="event__type">
         <img class="event__type-icon" width="42" height="42" src="img/icons/${eventType.toLowerCase()}.png" alt="${eventType.toLowerCase()} icon">
       </div>
-      <h3 class="event__title">${eventType} ${destinationCity}</h3>
+      <h3 class="event__title">${eventType} ${destination.name}</h3>
       <div class="event__schedule">
         <p class="event__time">
           <time class="event__start-time" datetime=${startDataTime}>${startTime}</time>

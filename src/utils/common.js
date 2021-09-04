@@ -16,3 +16,9 @@ export const updateItem = (items, update) => {
     ...items.slice(index + 1),
   ];
 };
+
+export const getRandomInteger = (minNumber, maxNumber) => {
+  const a = Math.ceil(Math.min(Math.abs(minNumber), Math.abs(maxNumber)));
+  const b = Math.floor(Math.max(Math.abs(minNumber), Math.abs(maxNumber)));
+  return Math.floor(a + Math.random()*(b + 1 - a));
+};

@@ -11,7 +11,7 @@ const createTripDatesTemplate = (startDate, endDate) => {
 };
 
 const createRouteTemplate = (events) => {
-  const cities = events.map((event) => event.destinationCity);
+  const cities = events.map((event) => event.destination.name);
   if (cities.length > 3) {
     return `<h1 class="trip-info__title">${cities[0]} &mdash; ... &mdash; ${cities[cities.length-1]}</h1>`;
   } else {
