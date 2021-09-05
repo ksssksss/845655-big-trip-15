@@ -91,6 +91,7 @@ export default class Point {
 
   _handleOnEscKeydown(evt) {
     if (isEscEvent(evt)){
+      this._pointEditComponent.reset(this._event);
       this._replaceFormToCard();
       document.removeEventListener('keydown', this._handleOnEscKeydown);
     }
@@ -101,13 +102,14 @@ export default class Point {
     document.addEventListener('keydown', this._handleOnEscKeydown);
   }
 
-  _handleFormSubmit(task) {
-    this._changeData(task);
+  _handleFormSubmit(event) {
+    this._changeData(event);
     this._replaceFormToCard();
     document.removeEventListener('keydown', this._handleOnEscKeydown);
   }
 
   _handleFormClose() {
+    this._pointEditComponent.reset(this._event);
     this._replaceFormToCard();
     document.removeEventListener('keydown', this._handleOnEscKeydown);
   }

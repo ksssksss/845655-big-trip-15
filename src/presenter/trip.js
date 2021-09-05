@@ -6,6 +6,7 @@ import {render, RenderPosition} from '../utils/render.js';
 import {updateItem} from '../utils/common.js';
 import {sortByDateUp, sortByDurationDown, sortByPriceDown} from '../utils/sort.js';
 import {SortType} from '../utils/const.js';
+import {remove} from '../utils/render.js';
 
 export default class Trip {
   constructor(mainContentContainer) {
@@ -14,7 +15,7 @@ export default class Trip {
     this._currentSortType = SortType.DAY;
 
     this._mainPointsList = new PointsListView();
-    this._sortComponent = new SortView();
+    this._sortComponent = null;
     this._noEventView = new NoEventsView();
 
     this._handlePointChange = this._handlePointChange.bind(this);
@@ -54,6 +55,10 @@ export default class Trip {
   }
 
   _renderSort() {
+    if (this._sortComponent) {
+      remove(this._sortComponent); // TO DO: переделать - как ???
+    }
+    this._sortComponent = new SortView(this._currentSortType);
     render(this._mainContentContainer, this._sortComponent, RenderPosition.AFTERBEGIN);
     this._sortComponent.setSortTypeChangeHandler(this._handleSortTypeChange);
   }
@@ -96,6 +101,7 @@ export default class Trip {
 
   _handleSortTypeChange(sortType) {
     this._sortEvents(sortType);
+    this._renderSort();
     this._clearPointsList();
     this._renderEvents(this._eventPoints);
   }
