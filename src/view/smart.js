@@ -23,8 +23,6 @@ export default class Smart extends AbstractView {
       return;
     }
 
-    // console.log(this._data);
-
     this.updateElement();
   }
 

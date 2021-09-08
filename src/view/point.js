@@ -1,5 +1,6 @@
 import AbstractView from './abstract.js';
 import {calculateDuration} from '../utils/date.js';
+import dayjs from 'dayjs';
 
 const createSelectedOffersListTemplate = (offersArray) => {
   let selectedOffersList = '';
@@ -29,13 +30,13 @@ const createPointTemplate = (event) => {
     isFavorite,
   } = event;
 
-  const startData = dateTime.dateStart.format('YYYY-MM-DD');
-  const startDataTime = dateTime.dateStart.format('YYYY-MM-DDTHH:mm');
-  const endDataTime = dateTime.dateEnd.format('YYYY-MM-DDTHH:mm');
+  const startData = dayjs(dateTime.dateStart).format('YYYY-MM-DD');
+  const startDataTime = dayjs(dateTime.dateStart).format('YYYY-MM-DDTHH:mm');
+  const endDataTime = dayjs(dateTime.dateEnd).format('YYYY-MM-DDTHH:mm');
   const offersList = createSelectedOffersListTemplate(offers);
-  const startTime = dateTime.dateStart.format('HH:mm');
-  const endTime = dateTime.dateEnd.format('HH:mm');
-  const startDate = dateTime.dateStart.format('MMM DD');
+  const startTime = dayjs(dateTime.dateStart).format('HH:mm');
+  const endTime = dayjs(dateTime.dateEnd).format('HH:mm');
+  const startDate = dayjs(dateTime.dateStart).format('MMM DD');
   const duration = calculateDuration(dateTime.dateStart, dateTime.dateEnd);
   const favotiteClass = isFavorite ? 'event__favorite-btn--active' : '';
 

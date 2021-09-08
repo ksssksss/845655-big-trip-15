@@ -7,7 +7,7 @@ const createTripDatesTemplate = (startDate, endDate) => {
     ? 'DD'
     : 'MMM DD';
 
-  return `<p class="trip-info__dates">${startDate.format(startDateFormat)}&nbsp;&mdash;&nbsp;${endDate.format(endDateFormat)}</p>`;
+  return `<p class="trip-info__dates">${dayjs(startDate).format(startDateFormat)}&nbsp;&mdash;&nbsp;${dayjs(endDate).format(endDateFormat)}</p>`;
 };
 
 const createRouteTemplate = (events) => {

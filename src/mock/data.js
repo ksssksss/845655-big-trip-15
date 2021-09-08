@@ -80,7 +80,7 @@ const generateDate = () => {
   const maxDaysGap = 7;
   const maxHoursGap = 12;
   const minutesGap = (getRandomInteger(0, -maxDaysGap) * 24 + getRandomInteger(0, -maxHoursGap)) * 60 + getRandomInteger(0, -60);
-  return dayjs().add(minutesGap, 'minute');
+  return dayjs().add(minutesGap, 'minute').format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
 };
 
 
@@ -100,7 +100,7 @@ const generateEventData = () => {
     },
     dateTime: {
       dateStart: dateStart,
-      dateEnd: dateStart.add(duration, 'minute'),
+      dateEnd: dayjs(dateStart).add(duration, 'minute').format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
     },
     price: getRandomInteger(60, 900),
     offers: generateOffersList(eventType),

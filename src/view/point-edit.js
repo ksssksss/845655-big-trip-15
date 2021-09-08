@@ -1,8 +1,14 @@
 // import AbstractView from './abstract.js';
 import SmartView from './smart.js';
-import dayjs from 'dayjs';
 import {destinationsMock, offersMock} from '../mock/mock-structures.js';
 import {getRandomInteger} from '../utils/common.js';
+import dayjs from 'dayjs';
+import flatpickr from 'flatpickr';
+import utc from 'dayjs/plugin/utc';
+import '../../node_modules/flatpickr/dist/flatpickr.min.css';
+
+// Добавлен плагин UTC для запрета смещения времени (+3)
+dayjs.extend(utc);
 
 export const OperationType = {
   NEW: 'new',
@@ -44,17 +50,16 @@ const getBlankPoint = () => {
 };
 
 const createOffersTemplate = (offersArray) => {
-  let offersList = '';
-  offersArray.forEach((offer, index) => {
-    offersList += `<div class="event__offer-selector">
-    <input class="event__offer-checkbox  visually-hidden" id="event-offer-${index}" type="checkbox" name="event-offer-comfort" data-index="${index}" ${offer.isChecked ? 'checked' : ''}>
-    <label class="event__offer-label" for="event-offer-${index}">
-      <span class="event__offer-title">${offer.title}</span>
-      &plus;&euro;&nbsp;
-      <span class="event__offer-price">${offer.price}</span>
-    </label>
-  </div>`;
-  });
+  const offersList = offersArray.map((offer, index) => (
+    `<div class="event__offer-selector">
+      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${index}" type="checkbox" name="event-offer-comfort" data-index="${index}" ${offer.isChecked ? 'checked' : ''}>
+      <label class="event__offer-label" for="event-offer-${index}">
+        <span class="event__offer-title">${offer.title}</span>
+        &plus;&euro;&nbsp;
+        <span class="event__offer-price">${offer.price}</span>
+      </label>
+    </div>`
+  ));
 
   return `<section class="event__section  event__section--offers">
     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
@@ -96,10 +101,10 @@ const setOperationTemplate = (operation) => {
 };
 
 const createDestinationsListTemplate = (destinations) => {
-  let datalistOptions = '';
-  destinations.forEach((destination) => {
-    datalistOptions += `<option value="${destination.name}"></option>`;
-  });
+  const datalistOptions = destinations.map((destination) => (
+    `<option value="${destination.name}"></option>`
+  ));
+
   return `<datalist id="destination-list-1">${datalistOptions}</datalist>`;
 };
 
@@ -110,15 +115,13 @@ const createNewEditPointTemplate = (operation, data) => {
     dateTime,
     price,
     offers,
-    // description, // получаем с сервера
-    // pictures, // получаем с сервера
     isHasOffers,
     isHasPictures,
   } = data;
 
   const offersList = isHasOffers ? createOffersTemplate(offers) : '';
-  const startData = dateTime.dateStart.format('DD/MM/YY HH:mm');
-  const endData = dateTime.dateEnd.format('DD/MM/YY HH:mm');
+  const startData = dateTime.dateStart;
+  const endData = dateTime.dateEnd;
   const descriptionText = createDescriptionTemplate(destination.description);
   const picturesList = isHasPictures? createPicturesTemplate(destination.pictures): '';
   const eventControls = setOperationTemplate(operation); // изменение шаблона event взависимости от operation: new event / edit event
@@ -156,11 +159,6 @@ const createNewEditPointTemplate = (operation, data) => {
               <div class="event__type-item">
                 <input id="event-type-ship-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="ship" ${eventType === EventTypes.SHIP ? 'checked' : ''}>
                 <label class="event__type-label  event__type-label--ship" for="event-type-ship-1">Ship</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-transport-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="transport">
-                <label class="event__type-label  event__type-label--transport" for="event-type-transport-1">Transport</label>
               </div>
 
               <div class="event__type-item">
@@ -235,6 +233,8 @@ export default class NewEditPoint extends SmartView {
     super();
     this._operation = operation;
     this._data = NewEditPoint.parseEventToData(this._operation, event);
+    this._startDatePicker = null;
+    this._endDatePicker = null;
 
     this._pointFormSubmitHandler = this._pointFormSubmitHandler.bind(this);
     this._rollupBtnClickHandler = this._rollupBtnClickHandler.bind(this);
@@ -243,8 +243,12 @@ export default class NewEditPoint extends SmartView {
     this._destinationInputHandler = this._destinationInputHandler.bind(this);
     this._offerChangeHandler = this._offerChangeHandler.bind(this);
     this._priceInputHandler = this._priceInputHandler.bind(this);
+    this._startDateChangeHandler = this._startDateChangeHandler.bind(this);
+    this._endDateChangeHandler = this._endDateChangeHandler.bind(this);
 
     this._setInnerHandlers();
+    this._setStartDatePicker();
+    this._setEndDatePicker();
   }
 
   getTemplate() {
@@ -263,6 +267,8 @@ export default class NewEditPoint extends SmartView {
 
   restoreHandlers() {
     this._setInnerHandlers();
+    this._setStartDatePicker();
+    this._setEndDatePicker();
     this.setPointFormSubmitHandler(this._callback.submitForm);
     this.setRollupBtnClickHandler(this._callback.rollupForm);
   }
@@ -338,6 +344,72 @@ export default class NewEditPoint extends SmartView {
     }, true);
   }
 
+  _startDateChangeHandler([userDate]) {
+    this.updateData({
+      dateTime: {
+        dateStart: dayjs(userDate).utc().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
+        dateEnd: this._data.dateTime.dateEnd,
+      },
+    }, true);
+  }
+
+  _endDateChangeHandler([userDate]) {
+    this.updateData({
+      dateTime: {
+        dateStart: this._data.dateTime.dateStart,
+        dateEnd: dayjs(userDate).utc().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
+      },
+    }, true);
+  }
+
+  _setStartDatePicker() {
+    if (this._startDatePicker) {
+      this._startDatePicker.destroy();
+      this._startDatePicker = null;
+    }
+
+    if (this._data.dateTime.dateStart) {
+      this._startDatePicker = flatpickr(
+        this.getElement().querySelector('#event-start-time-1'),
+        {
+          dateFormat: 'd/m/Y H:i',
+          defaultDate: this._data.dateTime.dateStart,
+          enableTime: true,
+          // time_24hr: true,
+          disable: [{
+            from: this._data.dateTime.dateEnd,
+            to: dayjs(this._data.dateTime.dateEnd).add(10, 'year').format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
+          }],
+          onChange: this._startDateChangeHandler,
+        },
+      );
+    }
+  }
+
+  _setEndDatePicker() {
+    if (this._endDatePicker) {
+      this._endDatePicker.destroy();
+      this._endDatePicker = null;
+    }
+
+    if (this._data.dateTime.dateEnd) {
+      this._endDatePicker = flatpickr(
+        this.getElement().querySelector('#event-end-time-1'),
+        {
+          dateFormat: 'd/m/Y H:i',
+          defaultDate: this._data.dateTime.endStart,
+          enableTime: true,
+          // time_24hr: true,
+          disable: [{
+            from: dayjs(this._data.dateTime.dateStart).subtract(10, 'year').format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
+            to: this._data.dateTime.dateStart,
+          }],
+          onChange: this._endDateChangeHandler,
+        },
+      );
+    }
+  }
+
   _setInnerHandlers() {
     this.getElement().querySelector('.event__type-list').addEventListener('click', this._eventTypeClickHandler);
     this.getElement().querySelector('.event__input--destination').addEventListener('click', this._destinationClickHandler);
@@ -356,7 +428,6 @@ export default class NewEditPoint extends SmartView {
   _rollupBtnClickHandler() {
     this._callback.rollupForm();
   }
-
 
   // event - данные c MODEL (сервер)
   static parseEventToData(operation, event) {
