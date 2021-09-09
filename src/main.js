@@ -5,9 +5,10 @@ import MenuView from './view/menu.js';
 import FiltersView from './view/filters.js';
 import {render, RenderPosition} from './utils/render.js';
 import {events} from './mock/data.js';
+import dayjs from 'dayjs';
 
 // Сортировка элементов
-const sortedEvents = events.sort((a, b) => a.dateTime.dateStart.toDate().getTime() - b.dateTime.dateStart.toDate().getTime());
+const sortedEvents = events.sort((a, b) => dayjs(a.dateTime.dateStart).toDate().getTime() - dayjs(b.dateTime.dateStart).toDate().getTime());
 // const sortedEvents = [];
 
 const sitePageHeaderElement = document.querySelector('.page-header');
@@ -16,7 +17,6 @@ const headerTripMainElement = sitePageHeaderElement.querySelector('.trip-main');
 const headerMenuElement = headerTripMainElement.querySelector('.trip-controls__navigation');
 const headerFiltersElement = headerTripMainElement.querySelector('.trip-controls__filters');
 const mainTripEventsElement = sitePageMainElement.querySelector('.trip-events');
-
 
 if (sortedEvents.length !== 0) {
   const headerTripInfoElement = new TripInfoView(sortedEvents); // '.trip-info'

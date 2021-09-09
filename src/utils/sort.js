@@ -1,8 +1,10 @@
-export const sortByDateUp = (eventA, eventB) => eventA.dateTime.dateStart.toDate().getTime() - eventB.dateTime.dateStart.toDate().getTime();
+import dayjs from 'dayjs';
+
+export const sortByDateUp = (eventA, eventB) => dayjs(eventA.dateTime.dateStart).toDate().getTime() - dayjs(eventB.dateTime.dateStart).toDate().getTime();
 
 export const sortByDurationDown = (eventA, eventB) => {
-  const durationA = eventA.dateTime.dateEnd.toDate().getTime() - eventA.dateTime.dateStart.toDate().getTime();
-  const durationB = eventB.dateTime.dateEnd.toDate().getTime() - eventB.dateTime.dateStart.toDate().getTime();
+  const durationA = dayjs(eventA.dateTime.dateEnd).toDate().getTime() - dayjs(eventA.dateTime.dateStart).toDate().getTime();
+  const durationB = dayjs(eventB.dateTime.dateEnd).toDate().getTime() - dayjs(eventB.dateTime.dateStart).toDate().getTime();
   return durationB - durationA;
 };
 
