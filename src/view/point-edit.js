@@ -1,7 +1,6 @@
-// import AbstractView from './abstract.js';
 import SmartView from './smart.js';
 import {destinationsMock, offersMock} from '../mock/mock-structures.js';
-import {getRandomInteger} from '../utils/common.js';
+import {OperationType, EventFormMode, EventTypes} from '../utils/const.js';
 import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
 import utc from 'dayjs/plugin/utc';
@@ -10,43 +9,10 @@ import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 // Добавлен плагин UTC для запрета смещения времени (+3)
 dayjs.extend(utc);
 
-export const OperationType = {
-  NEW: 'new',
-  EDIT: 'edit',
-};
-
-const EventTypes = {
-  TAXI: 'taxi',
-  BUS: 'bus',
-  TRAIN: 'train',
-  SHIP: 'ship',
-  DRIVE: 'drive',
-  FLIGHT: 'flight',
-  CHECKIN: 'check-in',
-  SIGHTSEEING: 'sightseeing',
-  RESTAURANT: 'restaurant',
-};
-
-const getBlankPoint = () => {
-  const eventType = EventTypes.TAXI;
-  const destinationCity = destinationsMock[getRandomInteger(0, destinationsMock.length - 1)].name; // получаем список возможных с сервера
-  const dateStart = dayjs();
-
-  return {
-    eventType,
-    destination: {
-      name: destinationCity,
-      description: destinationsMock.find((element) => element.name === destinationCity).description,
-      pictures: destinationsMock.find((element) => element.name === destinationCity).pictures,
-    },
-    dateTime: {
-      dateStart: dateStart,
-      dateEnd: dateStart.add(600, 'minute'),
-    },
-    price: 0,
-    offers: offersMock.find((element) => element.type === eventType).offers,
-    isFavorite: false,
-  };
+const defaultDatePicker = {
+  dateFormat: 'd/m/Y H:i',
+  enableTime: true,
+  'time_24hr': true,
 };
 
 const createOffersTemplate = (offersArray) => {
@@ -92,11 +58,10 @@ const createPicturesTemplate = (picturesArray) => {
 
 const setOperationTemplate = (operation) => {
   switch (operation) {
-    case 'edit':
-      return 'Delete';
-
-    case 'new':
-      return 'Cancel';
+    case OperationType.EDIT:
+      return EventFormMode.EDIT; // 'Delete'
+    case OperationType.NEW:
+      return EventFormMode.ADD; // 'Cancel'
   }
 };
 
@@ -107,6 +72,27 @@ const createDestinationsListTemplate = (destinations) => {
 
   return `<datalist id="destination-list-1">${datalistOptions}</datalist>`;
 };
+
+const createTypeListInputsTemplate = (types, currentTypes) => {
+  const typesArray = Object.values(types);
+  const typesList = typesArray
+    .map((type) => `<div class="event__type-item">
+  <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}" ${type === currentTypes ? 'checked' : ''}>
+  <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-1">${type[0].toUpperCase() + type.slice(1)}</label>
+  </div>`)
+    .join('');
+  return typesList;
+};
+
+const createRollupBtn = (operation) => {
+  if (operation === OperationType.EDIT) {
+    return `<button class="event__rollup-btn" type="button">
+    <span class="visually-hidden">Open event</span>
+  </button>`;
+  }
+  return '';
+};
+
 
 const createNewEditPointTemplate = (operation, data) => {
   const {
@@ -126,6 +112,7 @@ const createNewEditPointTemplate = (operation, data) => {
   const picturesList = isHasPictures? createPicturesTemplate(destination.pictures): '';
   const eventControls = setOperationTemplate(operation); // изменение шаблона event взависимости от operation: new event / edit event
   const destinationsCityList = createDestinationsListTemplate(destinationsMock);
+  const typeListInputs = createTypeListInputsTemplate(EventTypes, eventType);
 
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -140,51 +127,7 @@ const createNewEditPointTemplate = (operation, data) => {
           <div class="event__type-list">
             <fieldset class="event__type-group">
               <legend class="visually-hidden">Event type</legend>
-
-              <div class="event__type-item">
-                <input id="event-type-taxi-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="taxi" ${eventType === EventTypes.TAXI ? 'checked' : ''}>
-                <label class="event__type-label  event__type-label--taxi" for="event-type-taxi-1">Taxi</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-bus-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="bus" ${eventType === EventTypes.BUS ? 'checked' : ''}>
-                <label class="event__type-label  event__type-label--bus" for="event-type-bus-1">Bus</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-train-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="train" ${eventType === EventTypes.TRAIN ? 'checked' : ''}>
-                <label class="event__type-label  event__type-label--train" for="event-type-train-1">Train</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-ship-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="ship" ${eventType === EventTypes.SHIP ? 'checked' : ''}>
-                <label class="event__type-label  event__type-label--ship" for="event-type-ship-1">Ship</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-drive-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="drive" ${eventType === EventTypes.DRIVE ? 'checked' : ''}>
-                <label class="event__type-label  event__type-label--drive" for="event-type-drive-1">Drive</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-flight-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="flight" ${eventType === EventTypes.FLIGHT ? 'checked' : ''}>
-                <label class="event__type-label  event__type-label--flight" for="event-type-flight-1">Flight</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-check-in-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="check-in" ${eventType === EventTypes.CHECKIN ? 'checked' : ''}>
-                <label class="event__type-label  event__type-label--check-in" for="event-type-check-in-1">Check-in</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-sightseeing-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="sightseeing" ${eventType === EventTypes.SIGHTSEEING ? 'checked' : ''}>
-                <label class="event__type-label  event__type-label--sightseeing" for="event-type-sightseeing-1">Sightseeing</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-restaurant-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="restaurant" ${eventType === EventTypes.RESTAURANT ? 'checked' : ''}>
-                <label class="event__type-label  event__type-label--restaurant" for="event-type-restaurant-1">Restaurant</label>
-              </div>
+              ${typeListInputs}
             </fieldset>
           </div>
         </div>
@@ -215,9 +158,7 @@ const createNewEditPointTemplate = (operation, data) => {
 
         <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
         <button class="event__reset-btn" type="reset">${eventControls}</button>
-        <button class="event__rollup-btn" type="button">
-          <span class="visually-hidden">Open event</span>
-        </button>
+        ${createRollupBtn(operation)}
       </header>
       <section class="event__details">
         ${offersList}
@@ -229,7 +170,7 @@ const createNewEditPointTemplate = (operation, data) => {
 };
 
 export default class NewEditPoint extends SmartView {
-  constructor(operation, event = getBlankPoint()) {
+  constructor(operation, event) {
     super();
     this._operation = operation;
     this._data = NewEditPoint.parseEventToData(this._operation, event);
@@ -239,7 +180,8 @@ export default class NewEditPoint extends SmartView {
     this._pointFormSubmitHandler = this._pointFormSubmitHandler.bind(this);
     this._rollupBtnClickHandler = this._rollupBtnClickHandler.bind(this);
     this._eventTypeClickHandler = this._eventTypeClickHandler.bind(this);
-    // this._destinationClickHandler = this._destinationClickHandler.bind(this);
+    this._deleteClickHandler = this._deleteClickHandler.bind(this);
+    this._destinationClickHandler = this._destinationClickHandler.bind(this);
     this._destinationInputHandler = this._destinationInputHandler.bind(this);
     this._offerChangeHandler = this._offerChangeHandler.bind(this);
     this._priceInputHandler = this._priceInputHandler.bind(this);
@@ -265,12 +207,21 @@ export default class NewEditPoint extends SmartView {
     this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._rollupBtnClickHandler);
   }
 
+  setDeleteClickHandler(callback) {
+    this._callback.deletePoint = callback;
+    this.getElement().querySelector('.event__reset-btn').addEventListener('click', this._deleteClickHandler);
+  }
+
   restoreHandlers() {
     this._setInnerHandlers();
     this._setStartDatePicker();
     this._setEndDatePicker();
     this.setPointFormSubmitHandler(this._callback.submitForm);
-    this.setRollupBtnClickHandler(this._callback.rollupForm);
+    this.setDeleteClickHandler(this._callback.deletePoint);
+
+    if(this._callback.rollupForm) {
+      this.setRollupBtnClickHandler(this._callback.rollupForm);
+    }
   }
 
   reset(event) {
@@ -279,11 +230,25 @@ export default class NewEditPoint extends SmartView {
     );
   }
 
+  // Перегружаем метод родителя removeElement, чтобы при удалении удалялся более ненужный календарь
+  removeElement() {
+    super.removeElement();
+
+    if (this._startDatePicker) {
+      this._startDatePicker.destroy();
+      this._startDatePicker = null;
+    }
+
+    if (this._endDatePicker) {
+      this._endDatePicker.destroy();
+      this._endDatePicker = null;
+    }
+  }
+
   _eventTypeClickHandler(evt) {
     evt.preventDefault();
     const selectedType = evt.target.previousElementSibling.value;
 
-    // selectedType === transport ?
     const offers = offersMock.find((element) => element.type === selectedType).offers;
     if (!offers.length !== 0) {
       offers.forEach((offer) => offer.isChecked = false);
@@ -307,19 +272,23 @@ export default class NewEditPoint extends SmartView {
     const inputDestinationValue = evt.target.value;
     input.blur();
 
-    // нужно ограничить ввод пользовательских значений !
+    const isHasDestination = destinationsMock
+      .map((destination) => destination.name)
+      .some((destinationName) => destinationName === inputDestinationValue);
 
-    const description = destinationsMock.find((element) => element.name === inputDestinationValue).description;
-    const pictures = destinationsMock.find((element) => element.name === inputDestinationValue).pictures;
+    if (isHasDestination) {
+      const description = destinationsMock.find((element) => element.name === inputDestinationValue).description;
+      const pictures = destinationsMock.find((element) => element.name === inputDestinationValue).pictures;
 
-    this.updateData({
-      destination: {
-        name: inputDestinationValue,
-        description,
-        pictures,
-      },
-      isHasPictures: pictures.length !== 0,
-    });
+      this.updateData({
+        destination: {
+          name: inputDestinationValue,
+          description,
+          pictures,
+        },
+        isHasPictures: pictures.length !== 0,
+      });
+    }
   }
 
   _offerChangeHandler(evt) {
@@ -337,7 +306,7 @@ export default class NewEditPoint extends SmartView {
 
   _priceInputHandler(evt) {
     evt.preventDefault();
-    const inputPrice = Number(evt.target.value);
+    const inputPrice = Number(evt.target.value.replace(/[^\d]/g, ''));
 
     this.updateData({
       price: inputPrice && inputPrice > 0 ? inputPrice : 0,
@@ -350,7 +319,7 @@ export default class NewEditPoint extends SmartView {
         dateStart: dayjs(userDate).utc().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
         dateEnd: this._data.dateTime.dateEnd,
       },
-    }, true);
+    });
   }
 
   _endDateChangeHandler([userDate]) {
@@ -359,7 +328,7 @@ export default class NewEditPoint extends SmartView {
         dateStart: this._data.dateTime.dateStart,
         dateEnd: dayjs(userDate).utc().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
       },
-    }, true);
+    });
   }
 
   _setStartDatePicker() {
@@ -371,17 +340,18 @@ export default class NewEditPoint extends SmartView {
     if (this._data.dateTime.dateStart) {
       this._startDatePicker = flatpickr(
         this.getElement().querySelector('#event-start-time-1'),
-        {
-          dateFormat: 'd/m/Y H:i',
-          defaultDate: this._data.dateTime.dateStart,
-          enableTime: true,
-          // time_24hr: true,
-          disable: [{
-            from: this._data.dateTime.dateEnd,
-            to: dayjs(this._data.dateTime.dateEnd).add(10, 'year').format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
-          }],
-          onChange: this._startDateChangeHandler,
-        },
+        Object.assign(
+          {},
+          defaultDatePicker,
+          {
+            defaultDate: this._data.dateTime.dateStart,
+            disable: [{
+              from: this._data.dateTime.dateEnd,
+              to: dayjs(this._data.dateTime.dateEnd).add(10, 'year').format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
+            }],
+            onChange: this._startDateChangeHandler,
+          },
+        ),
       );
     }
   }
@@ -395,17 +365,18 @@ export default class NewEditPoint extends SmartView {
     if (this._data.dateTime.dateEnd) {
       this._endDatePicker = flatpickr(
         this.getElement().querySelector('#event-end-time-1'),
-        {
-          dateFormat: 'd/m/Y H:i',
-          defaultDate: this._data.dateTime.endStart,
-          enableTime: true,
-          // time_24hr: true,
-          disable: [{
-            from: dayjs(this._data.dateTime.dateStart).subtract(10, 'year').format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
-            to: this._data.dateTime.dateStart,
-          }],
-          onChange: this._endDateChangeHandler,
-        },
+        Object.assign(
+          {},
+          defaultDatePicker,
+          {
+            defaultDate: this._data.dateTime.endStart,
+            disable: [{
+              from: dayjs(this._data.dateTime.dateStart).subtract(10, 'year').format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
+              to: this._data.dateTime.dateStart,
+            }],
+            onChange: this._endDateChangeHandler,
+          },
+        ),
       );
     }
   }
@@ -427,6 +398,11 @@ export default class NewEditPoint extends SmartView {
 
   _rollupBtnClickHandler() {
     this._callback.rollupForm();
+  }
+
+  _deleteClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.deletePoint(NewEditPoint.parseDataToEvent(this._data));
   }
 
   // event - данные c MODEL (сервер)
