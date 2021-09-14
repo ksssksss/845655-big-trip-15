@@ -1,13 +1,9 @@
 import PointView from '../view/point.js';
 import NewEditPointView from '../view/point-edit';
-import {OperationType} from '../view/point-edit';
+import {OperationType} from '../utils/const.js';
+import {UserAction, UpdateType, Mode} from '../utils/const.js';
 import {isEscEvent} from '../utils/common.js';
 import {render, replace, remove, RenderPosition} from '../utils/render.js';
-
-const Mode = {
-  DEFAULT: 'default',
-  EDITTING: 'edditing',
-};
 
 export default class Point {
   constructor(pointListElement, changeData, changeMode) {
@@ -25,6 +21,7 @@ export default class Point {
     this._handleFormSubmit = this._handleFormSubmit.bind(this);
     this._handleFavoriteClick = this._handleFavoriteClick.bind(this);
     this._handleFormClose = this._handleFormClose.bind(this);
+    this._handleDeleteClick = this._handleDeleteClick.bind(this);
   }
 
   init(event) {
@@ -40,6 +37,7 @@ export default class Point {
 
     this._pointEditComponent.setPointFormSubmitHandler(this._handleFormSubmit);
     this._pointEditComponent.setRollupBtnClickHandler(this._handleFormClose);
+    this._pointEditComponent.setDeleteClickHandler(this._handleDeleteClick);
     this._pointComponent.setEditBtnClickHandler(this._handleEditClick);
     this._pointComponent.setFavoriteClickHandler(this._handleFavoriteClick);
 
@@ -103,7 +101,11 @@ export default class Point {
   }
 
   _handleFormSubmit(event) {
-    this._changeData(event);
+    this._changeData(
+      UserAction.UPDATE_POINT,
+      UpdateType.MINOR,
+      event,
+    );
     this._replaceFormToCard();
     document.removeEventListener('keydown', this._handleOnEscKeydown);
   }
@@ -116,6 +118,8 @@ export default class Point {
 
   _handleFavoriteClick() {
     this._changeData(
+      UserAction.UPDATE_POINT,
+      UpdateType.PATCH,
       Object.assign(
         {},
         this._event,
@@ -123,6 +127,14 @@ export default class Point {
           isFavorite: !this._event.isFavorite,
         },
       ),
+    );
+  }
+
+  _handleDeleteClick(event) {
+    this._changeData(
+      UserAction.DELETE_POINT,
+      UpdateType.MINOR,
+      event,
     );
   }
 }

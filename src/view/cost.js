@@ -3,7 +3,8 @@ import AbstractView from './abstract.js';
 const calculateCost = (events) => {
   let cost = 0;
   events.forEach((element) => {
-    cost += element.price + element.offers.reduce((sum, current) => sum + current.price, 0);
+    const checkedOffers = element.offers.filter((offer) => offer.isChecked);
+    cost += element.price + checkedOffers.reduce((sum, current) => sum + current.price, 0);
   });
   return cost;
 };

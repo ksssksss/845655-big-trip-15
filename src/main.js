@@ -1,34 +1,35 @@
 import TripPresenter from './presenter/trip.js';
-import TripInfoView from './view/trip-info.js';
-import CostView from './view/cost.js';
-import MenuView from './view/menu.js';
-import FiltersView from './view/filters.js';
-import {render, RenderPosition} from './utils/render.js';
+import PointsModel from './model/points.js';
+import FilterModel from './model/filter.js';
+import FilterPresenter from './presenter/filter.js';
 import {events} from './mock/data.js';
-import dayjs from 'dayjs';
 
-// Сортировка элементов
-const sortedEvents = events.sort((a, b) => dayjs(a.dateTime.dateStart).toDate().getTime() - dayjs(b.dateTime.dateStart).toDate().getTime());
-// const sortedEvents = [];
+// const events = [];
+
+const pointsModel = new PointsModel();
+pointsModel.setPoints(events);
+
+const filterModel = new FilterModel();
 
 const sitePageHeaderElement = document.querySelector('.page-header');
 const sitePageMainElement = document.querySelector('.page-main');
 const headerTripMainElement = sitePageHeaderElement.querySelector('.trip-main');
-const headerMenuElement = headerTripMainElement.querySelector('.trip-controls__navigation');
-const headerFiltersElement = headerTripMainElement.querySelector('.trip-controls__filters');
 const mainTripEventsElement = sitePageMainElement.querySelector('.trip-events');
 
-if (sortedEvents.length !== 0) {
-  const headerTripInfoElement = new TripInfoView(sortedEvents); // '.trip-info'
-
-  render(headerTripMainElement, headerTripInfoElement, RenderPosition.AFTERBEGIN);
-  render(headerTripInfoElement, new CostView(sortedEvents), RenderPosition.BEFOREEND);
-}
-
 // Пререзнтер Trip
-const tripPresenter = new TripPresenter(mainTripEventsElement);
-tripPresenter.init(sortedEvents);
+const tripPresenter = new TripPresenter(headerTripMainElement, mainTripEventsElement, pointsModel, filterModel);
+tripPresenter.init();
 
-render(headerMenuElement, new MenuView(), RenderPosition.AFTEREND);
-render(headerFiltersElement, new FiltersView(), RenderPosition.AFTEREND);
+const filterPresenter = new FilterPresenter(
+  headerTripMainElement.querySelector('.trip-controls__filters'),
+  filterModel,
+);
+filterPresenter.init();
+
+// нужно будет заблокировать кнопку New Point !
+document.querySelector('.trip-main__event-add-btn').addEventListener('click', (evt) => {
+  evt.preventDefault();
+  // нужно будет передать коллбэк TripPresenter'а по созданию нового поинта
+  tripPresenter.createPoint();
+});
 
