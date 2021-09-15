@@ -42,10 +42,12 @@ export default class NewPoint {
     this._handleOnEscKeydown = this._handleOnEscKeydown.bind(this);
   }
 
-  init () {
+  init (callback) {
     if (this._pointEditComponent !== null) {
       return;
     }
+
+    this._destroyCallback = callback;
 
     this._pointEditComponent = new NewEditPointView(OperationType.NEW, getBlankPoint());
     delete this._pointFormMode;
@@ -60,6 +62,10 @@ export default class NewPoint {
   destroy() {
     if (this._pointEditComponent === null) {
       return;
+    }
+
+    if (this._destroyCallback !== null) {
+      this._destroyCallback();
     }
 
     remove(this._pointEditComponent);
