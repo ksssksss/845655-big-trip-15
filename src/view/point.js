@@ -1,5 +1,5 @@
 import AbstractView from './abstract.js';
-import {calculateDuration} from '../utils/date.js';
+import {calculateDurationFromStartToEnd} from '../utils/date.js';
 import dayjs from 'dayjs';
 
 const createSelectedOffersListTemplate = (offersArray) => {
@@ -37,7 +37,7 @@ const createPointTemplate = (event) => {
   const startTime = dayjs(dateTime.dateStart).format('HH:mm');
   const endTime = dayjs(dateTime.dateEnd).format('HH:mm');
   const startDate = dayjs(dateTime.dateStart).format('MMM DD');
-  const duration = calculateDuration(dateTime.dateStart, dateTime.dateEnd);
+  const duration = calculateDurationFromStartToEnd(dateTime.dateStart, dateTime.dateEnd);
   const favotiteClass = isFavorite ? 'event__favorite-btn--active' : '';
 
 

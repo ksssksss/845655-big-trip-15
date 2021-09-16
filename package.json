@@ -24,6 +24,8 @@
   "dependencies": {
     "dayjs": "1.10.6",
     "flatpickr": "^4.6.9",
-    "nanoid": "^3.1.25"
+    "nanoid": "^3.1.25",
+    "chart.js": "2.9.4",
+    "chartjs-plugin-datalabels": "0.7.0"
   }
 }

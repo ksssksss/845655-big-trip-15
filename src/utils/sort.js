@@ -9,3 +9,7 @@ export const sortByDurationDown = (eventA, eventB) => {
 };
 
 export const sortByPriceDown = (eventA, eventB) => eventB.price - eventA.price;
+export const sortByMoneyDown = (a, b) => b.money - a.money;
+export const sortByTimeDown = (a, b) => b.timeSpend - a.timeSpend;
+export const sortByAmountDown = (a, b) => b.amount - a.amount;
+

@@ -49,3 +49,17 @@ export const EventTypes = {
   SIGHTSEEING: 'sightseeing',
   RESTAURANT: 'restaurant',
 };
+
+export const TransportTypes = {
+  TAXI: 'taxi',
+  BUS: 'bus',
+  TRAIN: 'train',
+  SHIP: 'ship',
+  DRIVE: 'drive',
+  FLIGHT: 'flight',
+};
+
+export const MenuItem = {
+  EVENTS: 'EVENTS',
+  STATISTICS: 'STATISTICS',
+};
