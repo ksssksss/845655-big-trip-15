@@ -19,9 +19,12 @@ export default class Menu extends AbstractView {
     return createMenuTemplate();
   }
 
-  _menuClickHandler(evt) {
-    evt.preventDefault();
-    this._callback.menuClick(evt.target.dataset.menuItem);
+  setMenuItem(menuItem) {
+    const activeItemElement = this.getElement().querySelector('.trip-tabs__btn--active');
+    const checkedItemElement = this.getElement().querySelector(`[data-menu-item="${menuItem}"]`);
+
+    activeItemElement.classList.remove('trip-tabs__btn--active');
+    checkedItemElement.classList.add('trip-tabs__btn--active');
   }
 
   setMenuClickHandler(callback) {
@@ -29,11 +32,8 @@ export default class Menu extends AbstractView {
     this.getElement().addEventListener('click', this._menuClickHandler);
   }
 
-  setMenuItem(menuItem) {
-    const activeItemElement = this.getElement().querySelector('.trip-tabs__btn--active');
-    const checkedItemElement = this.getElement().querySelector(`[data-menu-item="${menuItem}"]`);
-
-    activeItemElement.classList.remove('trip-tabs__btn--active');
-    checkedItemElement.classList.add('trip-tabs__btn--active');
+  _menuClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.menuClick(evt.target.dataset.menuItem);
   }
 }

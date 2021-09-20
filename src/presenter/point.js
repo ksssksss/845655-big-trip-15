@@ -5,11 +5,19 @@ import {UserAction, UpdateType, Mode} from '../utils/const.js';
 import {isEscEvent} from '../utils/common.js';
 import {render, replace, remove, RenderPosition} from '../utils/render.js';
 
+export const State = {
+  SAVING: 'SAVING',
+  DELETING: 'DELETING',
+  ABORTING: 'ABORTING',
+};
+
 export default class Point {
-  constructor(pointListElement, changeData, changeMode) {
+  constructor(pointListElement, changeData, changeMode, destinationsServer, offersServer) {
     this._pointListElement = pointListElement; // container
     this._changeData = changeData;
     this._changeMode = changeMode;
+    this._destinationsServer = destinationsServer;
+    this._offersServer = offersServer;
 
     this._mode = Mode.DEFAULT;
 
@@ -33,7 +41,7 @@ export default class Point {
     const prevPointEditComponent = this._pointEditComponent;
 
     this._pointComponent = new PointView(this._event);
-    this._pointEditComponent = new NewEditPointView(OperationType.EDIT, this._event);
+    this._pointEditComponent = new NewEditPointView(OperationType.EDIT, this._event, this._destinationsServer, this._offersServer);
 
     this._pointEditComponent.setPointFormSubmitHandler(this._handleFormSubmit);
     this._pointEditComponent.setRollupBtnClickHandler(this._handleFormClose);
@@ -55,7 +63,8 @@ export default class Point {
     }
 
     if (this._mode === Mode.EDITTING) {
-      replace(this._pointEditComponent, prevPointEditComponent);
+      replace(this._pointComponent, prevPointEditComponent);
+      this._mode = Mode.DEFAULT;
     }
 
 
@@ -73,6 +82,39 @@ export default class Point {
     if (this._mode !== Mode.DEFAULT) {
       this._replaceFormToCard();
       document.removeEventListener('keydown', this._handleOnEscKeydown);
+    }
+  }
+
+  setViewState(state) {
+    if (this._mode === Mode.DEFAULT) {
+      return;
+    }
+
+    const resetFormState = () => {
+      this._pointEditComponent.updateData({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    switch(state) {
+      case State.SAVING:
+        this._pointEditComponent.updateData({
+          isDisabled: true,
+          isSaving: true,
+        });
+        break;
+      case State.DELETING:
+        this._pointEditComponent.updateData({
+          isDisabled: true,
+          isDeleting: true,
+        });
+        break;
+      case State.ABORTING:
+        this._pointComponent.shake(resetFormState);
+        this._pointEditComponent.shake(resetFormState);
+        break;
     }
   }
 
@@ -106,7 +148,7 @@ export default class Point {
       UpdateType.MINOR,
       event,
     );
-    this._replaceFormToCard();
+
     document.removeEventListener('keydown', this._handleOnEscKeydown);
   }
 

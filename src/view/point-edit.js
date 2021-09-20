@@ -1,5 +1,4 @@
 import SmartView from './smart.js';
-import {destinationsMock, offersMock} from '../mock/mock-structures.js';
 import {OperationType, EventFormMode, EventTypes} from '../utils/const.js';
 import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
@@ -94,7 +93,7 @@ const createRollupBtn = (operation) => {
 };
 
 
-const createNewEditPointTemplate = (operation, data) => {
+const createNewEditPointTemplate = (operation, data, destinationsServer) => {
   const {
     eventType,
     destination,
@@ -103,6 +102,9 @@ const createNewEditPointTemplate = (operation, data) => {
     offers,
     isHasOffers,
     isHasPictures,
+    isDisabled,
+    isSaving,
+    isDeleting,
   } = data;
 
   const offersList = isHasOffers ? createOffersTemplate(offers) : '';
@@ -111,7 +113,7 @@ const createNewEditPointTemplate = (operation, data) => {
   const descriptionText = createDescriptionTemplate(destination.description);
   const picturesList = isHasPictures? createPicturesTemplate(destination.pictures): '';
   const eventControls = setOperationTemplate(operation); // изменение шаблона event взависимости от operation: new event / edit event
-  const destinationsCityList = createDestinationsListTemplate(destinationsMock);
+  const destinationsCityList = createDestinationsListTemplate(destinationsServer);
   const typeListInputs = createTypeListInputsTemplate(EventTypes, eventType);
 
   return `<li class="trip-events__item">
@@ -122,7 +124,7 @@ const createNewEditPointTemplate = (operation, data) => {
             <span class="visually-hidden">Choose event type</span>
             <img class="event__type-icon" width="17" height="17" src="img/icons/${eventType.toLowerCase()}.png" alt="${eventType.toLowerCase()} icon">
           </label>
-          <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
+          <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox" ${isDisabled ? 'disabled' : ''}>
 
           <div class="event__type-list">
             <fieldset class="event__type-group">
@@ -136,16 +138,16 @@ const createNewEditPointTemplate = (operation, data) => {
           <label class="event__label  event__type-output" for="event-destination-1">
             ${eventType}
           </label>
-          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
+          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1" ${isDisabled ? 'disabled' : ''}>
           ${destinationsCityList}
         </div>
 
         <div class="event__field-group  event__field-group--time">
           <label class="visually-hidden" for="event-start-time-1">From</label>
-          <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${startData}">
+          <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${startData}" ${isDisabled ? 'disabled' : ''}>
           &mdash;
           <label class="visually-hidden" for="event-end-time-1">To</label>
-          <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${endData}">
+          <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${endData}" ${isDisabled ? 'disabled' : ''}>
         </div>
 
         <div class="event__field-group  event__field-group--price">
@@ -153,11 +155,11 @@ const createNewEditPointTemplate = (operation, data) => {
             <span class="visually-hidden">Price</span>
             &euro;
           </label>
-          <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}">
+          <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}" ${isDisabled ? 'disabled' : ''}>
         </div>
 
-        <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-        <button class="event__reset-btn" type="reset">${eventControls}</button>
+        <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? 'disabled' : ''}>${isSaving ? 'Saving...' : 'Save'}</button>
+        <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>${isDeleting ? 'Deleting...' : eventControls}</button>
         ${createRollupBtn(operation)}
       </header>
       <section class="event__details">
@@ -170,7 +172,7 @@ const createNewEditPointTemplate = (operation, data) => {
 };
 
 export default class NewEditPoint extends SmartView {
-  constructor(operation, event) {
+  constructor(operation, event, destinationsServer, offersServer) {
     super();
     this._operation = operation;
     this._data = NewEditPoint.parseEventToData(this._operation, event);
@@ -188,13 +190,16 @@ export default class NewEditPoint extends SmartView {
     this._startDateChangeHandler = this._startDateChangeHandler.bind(this);
     this._endDateChangeHandler = this._endDateChangeHandler.bind(this);
 
+    this._destinationsServer = destinationsServer;
+    this._offersServer = offersServer;
+
     this._setInnerHandlers();
     this._setStartDatePicker();
     this._setEndDatePicker();
   }
 
   getTemplate() {
-    return createNewEditPointTemplate(this._operation, this._data);
+    return createNewEditPointTemplate(this._operation, this._data, this._destinationsServer);
   }
 
   setPointFormSubmitHandler(callback) {
@@ -249,7 +254,7 @@ export default class NewEditPoint extends SmartView {
     evt.preventDefault();
     const selectedType = evt.target.previousElementSibling.value;
 
-    const offers = offersMock.find((element) => element.type === selectedType).offers;
+    const offers = this._offersServer.find((element) => element.type === selectedType).offers;
     if (!offers.length !== 0) {
       offers.forEach((offer) => offer.isChecked = false);
     }
@@ -272,13 +277,13 @@ export default class NewEditPoint extends SmartView {
     const inputDestinationValue = evt.target.value;
     input.blur();
 
-    const isHasDestination = destinationsMock
+    const isHasDestination = this._destinationsServer
       .map((destination) => destination.name)
       .some((destinationName) => destinationName === inputDestinationValue);
 
     if (isHasDestination) {
-      const description = destinationsMock.find((element) => element.name === inputDestinationValue).description;
-      const pictures = destinationsMock.find((element) => element.name === inputDestinationValue).pictures;
+      const description = this._destinationsServer.find((element) => element.name === inputDestinationValue).description;
+      const pictures = this._destinationsServer.find((element) => element.name === inputDestinationValue).pictures;
 
       this.updateData({
         destination: {
@@ -369,7 +374,7 @@ export default class NewEditPoint extends SmartView {
           {},
           defaultDatePicker,
           {
-            defaultDate: this._data.dateTime.endStart,
+            defaultDate: this._data.dateTime.dateEnd,
             disable: [{
               from: dayjs(this._data.dateTime.dateStart).subtract(10, 'year').format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
               to: this._data.dateTime.dateStart,
@@ -415,6 +420,9 @@ export default class NewEditPoint extends SmartView {
         isHasOffers: event.offers.length !== 0,
         isHasPictures: event.destination.pictures.length !== 0,
         isEditMode: operation === OperationType.EDIT,
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
       },
     );
   }
@@ -425,6 +433,9 @@ export default class NewEditPoint extends SmartView {
 
     delete data.isHasOffers;
     delete data.isHasPictures;
+    delete data.isDisabled;
+    delete data.isSaving;
+    delete data.isDeleting;
 
     return data;
   }
