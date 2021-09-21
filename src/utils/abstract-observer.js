@@ -3,7 +3,6 @@ export default class AbstractObserver {
     this._observers = new Set();
   }
 
-
   // observer - callback
   addObserver(observer) {
     this._observers.add(observer);

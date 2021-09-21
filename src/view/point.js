@@ -18,8 +18,6 @@ const createSelectedOffersListTemplate = (offersArray) => {
   return selectedOffersList;
 };
 
-// const createSelectedOffersList =
-
 const createPointTemplate = (event) => {
   const {
     eventType,
@@ -85,14 +83,6 @@ export default class Point extends AbstractView {
     this._favoriteClickHandler = this._favoriteClickHandler.bind(this);
   }
 
-  _editBtnClickHandler() {
-    this._callback.editPoint();
-  }
-
-  _favoriteClickHandler() {
-    this._callback.favoriteClick();
-  }
-
   getTemplate() {
     return createPointTemplate(this._event);
   }
@@ -105,5 +95,13 @@ export default class Point extends AbstractView {
   setFavoriteClickHandler(callback) {
     this._callback.favoriteClick = callback;
     this.getElement().querySelector('.event__favorite-btn').addEventListener('click', this._favoriteClickHandler);
+  }
+
+  _editBtnClickHandler() {
+    this._callback.editPoint();
+  }
+
+  _favoriteClickHandler() {
+    this._callback.favoriteClick();
   }
 }

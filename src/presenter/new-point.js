@@ -1,38 +1,38 @@
 import NewEditPointView from '../view/point-edit.js';
 import {render, remove, RenderPosition } from '../utils/render.js';
 import {UserAction, UpdateType, EventFormMode, EventTypes, OperationType} from '../utils/const.js';
-import {destinationsMock, offersMock} from '../mock/mock-structures.js';
 import {isEscEvent} from '../utils/common.js';
 import {getRandomInteger} from '../utils/common.js';
 import dayjs from 'dayjs';
-import {nanoid} from 'nanoid';
 
-const getBlankPoint = () => {
+const getBlankPoint = (destinationsServer, offersServer) => {
   const eventType = EventTypes.TAXI;
-  const destinationCity = destinationsMock[getRandomInteger(0, destinationsMock.length - 1)].name; // получаем список возможных с сервера
+  const destinationCity = destinationsServer[getRandomInteger(0, destinationsServer.length - 1)].name; // получаем список возможных с сервера
   const dateStart = dayjs();
 
   return {
     eventType,
     destination: {
       name: destinationCity,
-      description: destinationsMock.find((element) => element.name === destinationCity).description,
-      pictures: destinationsMock.find((element) => element.name === destinationCity).pictures,
+      description: destinationsServer.find((element) => element.name === destinationCity).description,
+      pictures: destinationsServer.find((element) => element.name === destinationCity).pictures,
     },
     dateTime: {
       dateStart: dateStart.format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
       dateEnd: dateStart.add(600, 'minute').format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
     },
     price: 0,
-    offers: offersMock.find((element) => element.type === eventType).offers,
+    offers: offersServer.find((element) => element.type === eventType).offers,
     isFavorite: false,
   };
 };
 
 export default class NewPoint {
-  constructor(pointListElement, changeData) {
+  constructor(pointListElement, changeData, destinationsServer, offersServer) {
     this._pointListElement = pointListElement;
     this._changeData = changeData;
+    this._destinationsServer = destinationsServer;
+    this._offersServer = offersServer;
 
     this._pointEditComponent = null;
 
@@ -49,7 +49,9 @@ export default class NewPoint {
 
     this._destroyCallback = callback;
 
-    this._pointEditComponent = new NewEditPointView(OperationType.NEW, getBlankPoint());
+    const blankPoint = getBlankPoint(this._destinationsServer, this._offersServer);
+
+    this._pointEditComponent = new NewEditPointView(OperationType.NEW, blankPoint, this._destinationsServer, this._offersServer);
     delete this._pointFormMode;
     this._pointEditComponent.setPointFormSubmitHandler(this._handleFormSubmit);
     this._pointEditComponent.setDeleteClickHandler(this._handleDeleteClick);
@@ -74,15 +76,35 @@ export default class NewPoint {
     document.removeEventListener('keydown', this._handleOnEscKeydown);
   }
 
+  setSaving() {
+    this._pointEditComponent.updateData({
+      isDisabled: true,
+      isSaving: true,
+    });
+  }
+
+  setAborting() {
+    const resetFormState = () => {
+      this._pointEditComponent.updateData({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this._pointEditComponent.shake(resetFormState);
+  }
+
   _handleFormSubmit(event) {
     this._changeData(
       UserAction.ADD_POINT,
       UpdateType.MAJOR,
-      Object.assign({id: nanoid()}, event),
+      // Object.assign({id: nanoid()}, event),
+      event,
     );
 
     this._pointFormMode = EventFormMode.EDIT;
-    this.destroy();
+    // this.destroy();
   }
 
   _handleFormClose() {

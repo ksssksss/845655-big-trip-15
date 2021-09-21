@@ -33,7 +33,6 @@ export default class Smart extends AbstractView {
 
     // при генерации нового элемента будет снова зачитано свойство _data.
     // И если мы сперва обновим его, а потом шаблон, то в итоге получим элемент с новыми данными
-    // createElement(this.getTemplate())
     const newElement = this.getElement();
 
     parent.replaceChild(newElement, prevElement);

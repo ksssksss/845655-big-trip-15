@@ -4,11 +4,12 @@ import TripPresenter from './presenter/trip.js';
 import FilterPresenter from './presenter/filter.js';
 import MenuView from './view/menu.js';
 import StatisticsView from './view/statistics.js';
+import Api from './api/api.js';
 import {remove, render, RenderPosition} from './utils/render.js';
-import {MenuItem} from './utils/const.js';
-import {events} from './mock/data.js';
+import {MenuItem, UpdateType} from './utils/const.js';
 
-// const events = [];
+const END_POINT = 'https://15.ecmascript.pages.academy/big-trip/';
+const AUTHORIZATION = 'Basic ksksksksksksks';
 
 const sitePageHeaderElement = document.querySelector('.page-header');
 const sitePageMainElement = document.querySelector('.page-main');
@@ -18,23 +19,32 @@ const headerMenuElement = headerTripMainElement.querySelector('.trip-controls__n
 const mainBodyContainer = sitePageMainElement.querySelector('.page-body__container');
 const newEventButton = headerTripMainElement.querySelector('.trip-main__event-add-btn');
 
+const api = new Api(END_POINT, AUTHORIZATION);
+
 const pointsModel = new PointsModel();
 const filterModel = new FilterModel();
 const menuView = new MenuView();
 let statisticsView = null;
 
-pointsModel.setPoints(events);
+// TRIP PRESENTER
+const tripPresenter = new TripPresenter(headerTripMainElement, mainTripEventsElement, pointsModel, filterModel, api);
+
+api.getData()
+  .then((serverData) => {
+    pointsModel.setDestinations(serverData.destinations);
+    pointsModel.setOffers(serverData.offers);
+    pointsModel.setPoints(UpdateType.INIT, serverData.events);
+    render(headerMenuElement, menuView, RenderPosition.AFTEREND);
+  })
+  .catch(() => {
+    pointsModel.setPoints(UpdateType.INIT, []);
+    render(headerMenuElement, menuView, RenderPosition.AFTEREND);
+  })
+  .then(tripPresenter.init());
 
 const handleNewPointButtonUndisabled = () => {
   newEventButton.disabled = false;
 };
-
-// MENU
-render(headerMenuElement, menuView, RenderPosition.AFTEREND);
-
-// TRIP PRESENTER
-const tripPresenter = new TripPresenter(headerTripMainElement, mainTripEventsElement, pointsModel, filterModel);
-tripPresenter.init();
 
 // FILTER PRESENTER
 const filterPresenter = new FilterPresenter(
@@ -72,4 +82,3 @@ const handleMenuClick = (menuItem) => {
 };
 
 menuView.setMenuClickHandler(handleMenuClick);
-
