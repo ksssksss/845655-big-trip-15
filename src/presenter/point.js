@@ -1,35 +1,35 @@
 import PointView from '../view/point.js';
-import NewEditPointView from '../view/point-edit';
+import NewEditPointView from '../view/new-edit-point';
 import {OperationType} from '../utils/const.js';
 import {UserAction, UpdateType, Mode} from '../utils/const.js';
 import {isEscEvent} from '../utils/common.js';
 import {render, replace, remove, RenderPosition} from '../utils/render.js';
 
-export const State = {
+const State = {
   SAVING: 'SAVING',
   DELETING: 'DELETING',
   ABORTING: 'ABORTING',
 };
 
-export default class Point {
-  constructor(pointListElement, changeData, changeMode, destinationsServer, offersServer) {
+class Point {
+  constructor(pointListElement, changeData, changeMode, serverDestinations, serverOffers) {
     this._pointListElement = pointListElement; // container
     this._changeData = changeData;
     this._changeMode = changeMode;
-    this._destinationsServer = destinationsServer;
-    this._offersServer = offersServer;
+    this._serverDestinations = serverDestinations;
+    this._serverOffers = serverOffers;
 
     this._mode = Mode.DEFAULT;
 
     this._pointComponent = null;
     this._pointEditComponent = null;
 
-    this._handleOnEscKeydown = this._handleOnEscKeydown.bind(this);
-    this._handleEditClick = this._handleEditClick.bind(this);
-    this._handleFormSubmit = this._handleFormSubmit.bind(this);
-    this._handleFavoriteClick = this._handleFavoriteClick.bind(this);
-    this._handleFormClose = this._handleFormClose.bind(this);
-    this._handleDeleteClick = this._handleDeleteClick.bind(this);
+    this._escKeydownHandler = this._escKeydownHandler.bind(this);
+    this._editClickHandler = this._editClickHandler.bind(this);
+    this._formSubmitClickHandler = this._formSubmitClickHandler.bind(this);
+    this._favoriteClickHandler = this._favoriteClickHandler.bind(this);
+    this._formCloseClickHandler = this._formCloseClickHandler.bind(this);
+    this._deleteClickHandler = this._deleteClickHandler.bind(this);
   }
 
   init(event) {
@@ -41,13 +41,13 @@ export default class Point {
     const prevPointEditComponent = this._pointEditComponent;
 
     this._pointComponent = new PointView(this._event);
-    this._pointEditComponent = new NewEditPointView(OperationType.EDIT, this._event, this._destinationsServer, this._offersServer);
+    this._pointEditComponent = new NewEditPointView(OperationType.EDIT, this._event, this._serverDestinations, this._serverOffers);
 
-    this._pointEditComponent.setPointFormSubmitHandler(this._handleFormSubmit);
-    this._pointEditComponent.setRollupBtnClickHandler(this._handleFormClose);
-    this._pointEditComponent.setDeleteClickHandler(this._handleDeleteClick);
-    this._pointComponent.setEditBtnClickHandler(this._handleEditClick);
-    this._pointComponent.setFavoriteClickHandler(this._handleFavoriteClick);
+    this._pointEditComponent.setPointFormSubmitHandler(this._formSubmitClickHandler);
+    this._pointEditComponent.setRollupBtnClickHandler(this._formCloseClickHandler);
+    this._pointEditComponent.setDeleteClickHandler(this._deleteClickHandler);
+    this._pointComponent.setEditBtnClickHandler(this._editClickHandler);
+    this._pointComponent.setFavoriteClickHandler(this._favoriteClickHandler);
 
 
     // Если компоненты null, то есть не создавались, рендерим как раньше.
@@ -81,7 +81,7 @@ export default class Point {
   resetView() {
     if (this._mode !== Mode.DEFAULT) {
       this._replaceFormToCard();
-      document.removeEventListener('keydown', this._handleOnEscKeydown);
+      document.removeEventListener('keydown', this._escKeydownHandler);
     }
   }
 
@@ -99,27 +99,30 @@ export default class Point {
     };
 
     switch(state) {
-      case State.SAVING:
+      case State.SAVING: {
         this._pointEditComponent.updateData({
           isDisabled: true,
           isSaving: true,
         });
         break;
-      case State.DELETING:
+      }
+      case State.DELETING: {
         this._pointEditComponent.updateData({
           isDisabled: true,
           isDeleting: true,
         });
         break;
-      case State.ABORTING:
+      }
+      case State.ABORTING: {
         this._pointComponent.shake(resetFormState);
         this._pointEditComponent.shake(resetFormState);
         break;
+      }
     }
   }
 
   _replaceCardToFrom() {
-    this._changeMode(); // используем resetView() через TripPresenter в _changeMode (=_handleModeChange())
+    this._changeMode(); // используем resetView() через TripPresenter в _changeMode (=_modeChangeHandler())
     this._mode = Mode.EDITTING;
     replace(this._pointEditComponent, this._pointComponent);
   }
@@ -129,36 +132,36 @@ export default class Point {
     replace(this._pointComponent, this._pointEditComponent);
   }
 
-  _handleOnEscKeydown(evt) {
+  _escKeydownHandler(evt) {
     if (isEscEvent(evt)){
       this._pointEditComponent.reset(this._event);
       this._replaceFormToCard();
-      document.removeEventListener('keydown', this._handleOnEscKeydown);
+      document.removeEventListener('keydown', this._escKeydownHandler);
     }
   }
 
-  _handleEditClick() {
+  _editClickHandler() {
     this._replaceCardToFrom();
-    document.addEventListener('keydown', this._handleOnEscKeydown);
+    document.addEventListener('keydown', this._escKeydownHandler);
   }
 
-  _handleFormSubmit(event) {
+  _formSubmitClickHandler(event) {
     this._changeData(
       UserAction.UPDATE_POINT,
       UpdateType.MINOR,
       event,
     );
 
-    document.removeEventListener('keydown', this._handleOnEscKeydown);
+    document.removeEventListener('keydown', this._escKeydownHandler);
   }
 
-  _handleFormClose() {
+  _formCloseClickHandler() {
     this._pointEditComponent.reset(this._event);
     this._replaceFormToCard();
-    document.removeEventListener('keydown', this._handleOnEscKeydown);
+    document.removeEventListener('keydown', this._escKeydownHandler);
   }
 
-  _handleFavoriteClick() {
+  _favoriteClickHandler() {
     this._changeData(
       UserAction.UPDATE_POINT,
       UpdateType.PATCH,
@@ -172,7 +175,7 @@ export default class Point {
     );
   }
 
-  _handleDeleteClick(event) {
+  _deleteClickHandler(event) {
     this._changeData(
       UserAction.DELETE_POINT,
       UpdateType.MINOR,
@@ -180,3 +183,5 @@ export default class Point {
     );
   }
 }
+
+export {Point as default, State};

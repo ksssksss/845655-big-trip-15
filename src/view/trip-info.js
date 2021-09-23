@@ -1,6 +1,8 @@
 import AbstractView from './abstract.js';
 import dayjs from 'dayjs';
 
+const MAX_CITY_NUMBER = 3;
+
 const createTripDatesTemplate = (startDate, endDate) => {
   const startDateFormat = 'MMM DD';
   const endDateFormat = dayjs(startDate).month() === dayjs(endDate).month()
@@ -12,11 +14,10 @@ const createTripDatesTemplate = (startDate, endDate) => {
 
 const createRouteTemplate = (events) => {
   const cities = events.map((event) => event.destination.name);
-  if (cities.length > 3) {
+  if (cities.length > MAX_CITY_NUMBER) {
     return `<h1 class="trip-info__title">${cities[0]} &mdash; ... &mdash; ${cities[cities.length-1]}</h1>`;
-  } else {
-    return `<h1 class="trip-info__title">${cities.map((city) => city).join(' &mdash; ')}</h1>`;
   }
+  return `<h1 class="trip-info__title">${cities.map((city) => city).join(' &mdash; ')}</h1>`;
 };
 
 const createTripInfoTemplate = (sortedEvents) => (
@@ -29,7 +30,7 @@ const createTripInfoTemplate = (sortedEvents) => (
   </section>`
 );
 
-export default class TripInfo extends AbstractView {
+class TripInfo extends AbstractView {
   constructor (events) {
     super();
     this._events = events;
@@ -39,3 +40,5 @@ export default class TripInfo extends AbstractView {
     return createTripInfoTemplate(this._events);
   }
 }
+
+export {TripInfo as default};

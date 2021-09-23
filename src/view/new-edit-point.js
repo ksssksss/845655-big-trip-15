@@ -1,5 +1,5 @@
 import SmartView from './smart.js';
-import {OperationType, EventFormMode, EventTypes} from '../utils/const.js';
+import {OperationType, EventFormMode, EventType} from '../utils/const.js';
 import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
 import utc from 'dayjs/plugin/utc';
@@ -14,8 +14,8 @@ const defaultDatePicker = {
   'time_24hr': true,
 };
 
-const createOffersTemplate = (offersArray) => {
-  const offersList = offersArray.map((offer, index) => (
+const createOffersTemplate = (offers) => {
+  const offersList = offers.map((offer, index) => (
     `<div class="event__offer-selector">
       <input class="event__offer-checkbox  visually-hidden" id="event-offer-${index}" type="checkbox" name="event-offer-comfort" data-index="${index}" ${offer.isChecked ? 'checked' : ''}>
       <label class="event__offer-label" for="event-offer-${index}">
@@ -46,8 +46,8 @@ const createPictureTemplate = (pictureSrc) => (
   `<img class="event__photo" src="${pictureSrc.src}" alt="${pictureSrc.description}">`
 );
 
-const createPicturesTemplate = (picturesArray) => {
-  const picturesList = picturesArray.map((value) => createPictureTemplate(value)).join(' ');
+const createPicturesTemplate = (pictures) => {
+  const picturesList = pictures.map((value) => createPictureTemplate(value)).join(' ');
   return `<div class="event__photos-container">
     <div class="event__photos-tape">
       ${picturesList}
@@ -57,10 +57,12 @@ const createPicturesTemplate = (picturesArray) => {
 
 const setOperationTemplate = (operation) => {
   switch (operation) {
-    case OperationType.EDIT:
+    case OperationType.EDIT: {
       return EventFormMode.EDIT; // 'Delete'
-    case OperationType.NEW:
+    }
+    case OperationType.NEW: {
       return EventFormMode.ADD; // 'Cancel'
+    }
   }
 };
 
@@ -73,8 +75,8 @@ const createDestinationsListTemplate = (destinations) => {
 };
 
 const createTypeListInputsTemplate = (types, currentTypes) => {
-  const typesArray = Object.values(types);
-  const typesList = typesArray
+  const allTypes = Object.values(types);
+  const typesList = allTypes
     .map((type) => `<div class="event__type-item">
   <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}" ${type === currentTypes ? 'checked' : ''}>
   <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-1">${type[0].toUpperCase() + type.slice(1)}</label>
@@ -93,7 +95,7 @@ const createRollupBtn = (operation) => {
 };
 
 
-const createNewEditPointTemplate = (operation, data, destinationsServer) => {
+const createNewEditPointTemplate = (operation, data, serverDestinations) => {
   const {
     eventType,
     destination,
@@ -113,8 +115,8 @@ const createNewEditPointTemplate = (operation, data, destinationsServer) => {
   const descriptionText = createDescriptionTemplate(destination.description);
   const picturesList = isHasPictures? createPicturesTemplate(destination.pictures): '';
   const eventControls = setOperationTemplate(operation); // изменение шаблона event взависимости от operation: new event / edit event
-  const destinationsCityList = createDestinationsListTemplate(destinationsServer);
-  const typeListInputs = createTypeListInputsTemplate(EventTypes, eventType);
+  const destinationsCityList = createDestinationsListTemplate(serverDestinations);
+  const typeListInputs = createTypeListInputsTemplate(EventType, eventType);
 
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -171,8 +173,8 @@ const createNewEditPointTemplate = (operation, data, destinationsServer) => {
   </li>`;
 };
 
-export default class NewEditPoint extends SmartView {
-  constructor(operation, event, destinationsServer, offersServer) {
+class NewEditPoint extends SmartView {
+  constructor(operation, event, serverDestinations, serverOffers) {
     super();
     this._operation = operation;
     this._data = NewEditPoint.parseEventToData(this._operation, event);
@@ -190,8 +192,8 @@ export default class NewEditPoint extends SmartView {
     this._startDateChangeHandler = this._startDateChangeHandler.bind(this);
     this._endDateChangeHandler = this._endDateChangeHandler.bind(this);
 
-    this._destinationsServer = destinationsServer;
-    this._offersServer = offersServer;
+    this._serverDestinations = serverDestinations;
+    this._serverOffers = serverOffers;
 
     this._setInnerHandlers();
     this._setStartDatePicker();
@@ -199,40 +201,7 @@ export default class NewEditPoint extends SmartView {
   }
 
   getTemplate() {
-    return createNewEditPointTemplate(this._operation, this._data, this._destinationsServer);
-  }
-
-  setPointFormSubmitHandler(callback) {
-    this._callback.submitForm = callback;
-    this.getElement().querySelector('form').addEventListener('submit', this._pointFormSubmitHandler);
-  }
-
-  setRollupBtnClickHandler(callback) {
-    this._callback.rollupForm = callback;
-    this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._rollupBtnClickHandler);
-  }
-
-  setDeleteClickHandler(callback) {
-    this._callback.deletePoint = callback;
-    this.getElement().querySelector('.event__reset-btn').addEventListener('click', this._deleteClickHandler);
-  }
-
-  restoreHandlers() {
-    this._setInnerHandlers();
-    this._setStartDatePicker();
-    this._setEndDatePicker();
-    this.setPointFormSubmitHandler(this._callback.submitForm);
-    this.setDeleteClickHandler(this._callback.deletePoint);
-
-    if(this._callback.rollupForm) {
-      this.setRollupBtnClickHandler(this._callback.rollupForm);
-    }
-  }
-
-  reset(event) {
-    this.updateData(
-      NewEditPoint.parseEventToData(OperationType.EDIT, event),
-    );
+    return createNewEditPointTemplate(this._operation, this._data, this._serverDestinations);
   }
 
   // Перегружаем метод родителя removeElement, чтобы при удалении удалялся более ненужный календарь
@@ -250,11 +219,44 @@ export default class NewEditPoint extends SmartView {
     }
   }
 
+  restoreHandlers() {
+    this._setInnerHandlers();
+    this._setStartDatePicker();
+    this._setEndDatePicker();
+    this.setPointFormSubmitHandler(this._callback.submitForm);
+    this.setDeleteClickHandler(this._callback.deletePoint);
+
+    if(this._callback.rollupForm) {
+      this.setRollupBtnClickHandler(this._callback.rollupForm);
+    }
+  }
+
+  setPointFormSubmitHandler(callback) {
+    this._callback.submitForm = callback;
+    this.getElement().querySelector('form').addEventListener('submit', this._pointFormSubmitHandler);
+  }
+
+  setRollupBtnClickHandler(callback) {
+    this._callback.rollupForm = callback;
+    this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._rollupBtnClickHandler);
+  }
+
+  setDeleteClickHandler(callback) {
+    this._callback.deletePoint = callback;
+    this.getElement().querySelector('.event__reset-btn').addEventListener('click', this._deleteClickHandler);
+  }
+
+  reset(event) {
+    this.updateData(
+      NewEditPoint.parseEventToData(OperationType.EDIT, event),
+    );
+  }
+
   _eventTypeClickHandler(evt) {
     evt.preventDefault();
     const selectedType = evt.target.previousElementSibling.value;
 
-    const offers = this._offersServer.find((element) => element.type === selectedType).offers;
+    const offers = this._serverOffers.find((element) => element.type === selectedType).offers;
     if (!offers.length !== 0) {
       offers.forEach((offer) => offer.isChecked = false);
     }
@@ -277,13 +279,11 @@ export default class NewEditPoint extends SmartView {
     const inputDestinationValue = evt.target.value;
     input.blur();
 
-    const isHasDestination = this._destinationsServer
-      .map((destination) => destination.name)
-      .some((destinationName) => destinationName === inputDestinationValue);
+    const isHasDestination = this._serverDestinations.some((destination) => destination.name === inputDestinationValue);
 
     if (isHasDestination) {
-      const description = this._destinationsServer.find((element) => element.name === inputDestinationValue).description;
-      const pictures = this._destinationsServer.find((element) => element.name === inputDestinationValue).pictures;
+      const description = this._serverDestinations.find((element) => element.name === inputDestinationValue).description;
+      const pictures = this._serverDestinations.find((element) => element.name === inputDestinationValue).pictures;
 
       this.updateData({
         destination: {
@@ -439,5 +439,6 @@ export default class NewEditPoint extends SmartView {
 
     return data;
   }
-
 }
+
+export {NewEditPoint as default};

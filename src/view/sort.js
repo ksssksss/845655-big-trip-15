@@ -30,7 +30,7 @@ const createSortTemplate = (sortType = SortType.DAY) => (
   </form>`
 );
 
-export default class Sort extends AbstractView {
+class Sort extends AbstractView {
   constructor(sortType) {
     super();
     this._sortType = sortType;
@@ -56,3 +56,5 @@ export default class Sort extends AbstractView {
     this._callback.sortTypeChange(evt.target.value.replace('sort-', ''));
   }
 }
+
+export {Sort as default};

@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 
-export const calculateDuration = (minutes) => {
+const calculateDuration = (minutes) => {
   const days = Math.floor(minutes / (60*24));
   const hours = Math.floor(minutes % (60*24) / 60);
   const min = Math.floor(minutes % 60);
@@ -8,12 +8,14 @@ export const calculateDuration = (minutes) => {
   return duration;
 };
 
-export const calculateDurationFromStartToEnd = (start, end) => {
+const calculateDurationFromStartToEnd = (start, end) => {
   const minutes = dayjs(end).diff(dayjs(start), 'minute');
   return calculateDuration(minutes);
 };
 
-export const calculateDurationFromMiliSeconds = (miliseconds) => {
-  const minutes = miliseconds / (60 * 1000);
+const calculateDurationFromMilliseconds = (milliseconds) => {
+  const minutes = milliseconds / (60 * 1000);
   return calculateDuration(minutes);
 };
+
+export {calculateDuration, calculateDurationFromStartToEnd, calculateDurationFromMilliseconds};

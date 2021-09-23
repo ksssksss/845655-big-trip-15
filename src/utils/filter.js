@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 dayjs.extend(isSameOrAfter);
 
-export const filter = {
+const filter = {
   [FilterType.EVERYTHING]: (events) => events,
   [FilterType.FUTURE]: (events) => events.filter((event) => {
     const eventStart = dayjs(event.dateTime.dateStart);
@@ -20,4 +20,6 @@ export const filter = {
     }
   }),
 };
+
+export {filter};
 

@@ -15,9 +15,9 @@ const sitePageHeaderElement = document.querySelector('.page-header');
 const sitePageMainElement = document.querySelector('.page-main');
 const headerTripMainElement = sitePageHeaderElement.querySelector('.trip-main');
 const mainTripEventsElement = sitePageMainElement.querySelector('.trip-events');
-const headerMenuElement = headerTripMainElement.querySelector('.trip-controls__navigation');
-const mainBodyContainer = sitePageMainElement.querySelector('.page-body__container');
-const newEventButton = headerTripMainElement.querySelector('.trip-main__event-add-btn');
+const headerNavigationElement = headerTripMainElement.querySelector('.trip-controls__navigation');
+const mainBodyContainerElement = sitePageMainElement.querySelector('.page-body__container');
+const headerAddEventButtonElement = headerTripMainElement.querySelector('.trip-main__event-add-btn');
 
 const api = new Api(END_POINT, AUTHORIZATION);
 
@@ -34,16 +34,16 @@ api.getData()
     pointsModel.setDestinations(serverData.destinations);
     pointsModel.setOffers(serverData.offers);
     pointsModel.setPoints(UpdateType.INIT, serverData.events);
-    render(headerMenuElement, menuView, RenderPosition.AFTEREND);
+    render(headerNavigationElement, menuView, RenderPosition.AFTEREND);
   })
   .catch(() => {
     pointsModel.setPoints(UpdateType.INIT, []);
-    render(headerMenuElement, menuView, RenderPosition.AFTEREND);
+    render(headerNavigationElement, menuView, RenderPosition.AFTEREND);
   })
   .then(tripPresenter.init());
 
-const handleNewPointButtonUndisabled = () => {
-  newEventButton.disabled = false;
+const newPointButtonUndisabledHandler = () => {
+  headerAddEventButtonElement.disabled = false;
 };
 
 // FILTER PRESENTER
@@ -54,31 +54,33 @@ const filterPresenter = new FilterPresenter(
 filterPresenter.init();
 
 // ADD NEW EVENT
-newEventButton.addEventListener('click', (evt) => {
+headerAddEventButtonElement.addEventListener('click', (evt) => {
   evt.preventDefault();
-  newEventButton.disabled = true;
+  headerAddEventButtonElement.disabled = true;
   // нужно будет передать коллбэк TripPresenter'а по созданию нового поинта
-  tripPresenter.createPoint(handleNewPointButtonUndisabled);
+  tripPresenter.createPoint(newPointButtonUndisabledHandler);
 });
 
 
 // MENU CLICK
-const handleMenuClick = (menuItem) => {
+const menuClickHandler = (menuItem) => {
   switch (menuItem) {
-    case MenuItem.EVENTS:
+    case MenuItem.EVENTS: {
       menuView.setMenuItem(menuItem);
       remove(statisticsView);
       tripPresenter.init();
-      handleNewPointButtonUndisabled();
+      newPointButtonUndisabledHandler();
       break;
-    case MenuItem.STATISTICS:
+    }
+    case MenuItem.STATISTICS: {
       menuView.setMenuItem(menuItem);
-      newEventButton.disabled = true;
+      headerAddEventButtonElement.disabled = true;
       tripPresenter.destroy();
       statisticsView = new StatisticsView(pointsModel);
-      render(mainBodyContainer, statisticsView, RenderPosition.BEFOREEND);
+      render(mainBodyContainerElement, statisticsView, RenderPosition.BEFOREEND);
       break;
+    }
   }
 };
 
-menuView.setMenuClickHandler(handleMenuClick);
+menuView.setMenuClickHandler(menuClickHandler);

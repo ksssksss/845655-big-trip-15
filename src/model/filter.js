@@ -1,7 +1,7 @@
 import AbstractObserver from '../utils/abstract-observer.js';
 import {FilterType} from '../utils/const.js';
 
-export default class Filter extends AbstractObserver {
+class Filter extends AbstractObserver {
   constructor() {
     super();
     this._activeFilter = FilterType.EVERYTHING;
@@ -16,3 +16,5 @@ export default class Filter extends AbstractObserver {
     return this._activeFilter;
   }
 }
+
+export {Filter as default};

@@ -15,7 +15,7 @@ const createCostInfoTemplate = (cost) => (
   </p>`
 );
 
-export default class Cost extends AbstractView {
+class Cost extends AbstractView {
   constructor(events) {
     super();
     this._events = events;
@@ -26,3 +26,5 @@ export default class Cost extends AbstractView {
     return createCostInfoTemplate(this._cost);
   }
 }
+
+export {Cost as default};

@@ -2,7 +2,7 @@ import {createElement} from '../utils/render.js';
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
-export default class Abstract {
+class Abstract {
   constructor() {
     if (new.target === Abstract) {
       throw new Error('Can\'t instantiate Abstract, only concrete one.');
@@ -35,3 +35,5 @@ export default class Abstract {
     }, SHAKE_ANIMATION_TIMEOUT);
   }
 }
+
+export {Abstract as default};

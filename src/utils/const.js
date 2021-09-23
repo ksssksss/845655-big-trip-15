@@ -1,45 +1,45 @@
-export const Mode = {
+const Mode = {
   DEFAULT: 'default',
   EDITTING: 'edditing',
 };
 
-export const OperationType = {
+const OperationType = {
   NEW: 'new',
   EDIT: 'edit',
 };
 
-export const EventFormMode = {
+const EventFormMode = {
   EDIT: 'Delete',
   ADD: 'Cancel',
 };
 
-export const SortType = {
+const SortType = {
   DAY: 'day',
   TIME: 'time',
   PRICE: 'price',
 };
 
-export const UserAction = {
+const UserAction = {
   UPDATE_POINT: 'UPDATE_POINT',
   ADD_POINT: 'ADD_POINT',
   DELETE_POINT: 'DELETE_POINT',
 };
 
 // типо изменений (для того, чтобы понять, что обновлять далее)
-export const UpdateType = {
+const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
   INIT: 'INIT',
 };
 
-export const FilterType = {
-  EVERYTHING: 'everything',
-  FUTURE: 'future',
-  PAST: 'past',
+const FilterType = {
+  EVERYTHING: 'EVERYTHING',
+  FUTURE: 'FUTURE',
+  PAST: 'PAST',
 };
 
-export const EventTypes = {
+const EventType = {
   TAXI: 'taxi',
   BUS: 'bus',
   TRAIN: 'train',
@@ -51,7 +51,7 @@ export const EventTypes = {
   RESTAURANT: 'restaurant',
 };
 
-export const TransportTypes = {
+const TransportType = {
   TAXI: 'taxi',
   BUS: 'bus',
   TRAIN: 'train',
@@ -60,7 +60,9 @@ export const TransportTypes = {
   FLIGHT: 'flight',
 };
 
-export const MenuItem = {
+const MenuItem = {
   EVENTS: 'EVENTS',
   STATISTICS: 'STATISTICS',
 };
+
+export {Mode, OperationType, EventFormMode, SortType, UserAction, UpdateType, FilterType, EventType, TransportType, MenuItem};

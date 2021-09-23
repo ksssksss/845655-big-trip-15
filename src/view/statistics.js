@@ -1,7 +1,7 @@
 import Chart from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import SmartView from './smart.js';
-import {calculateDurationFromMiliSeconds} from '../utils/date.js';
+import {calculateDurationFromMilliseconds} from '../utils/date.js';
 import {sortByMoneyDown, sortByTimeDown, sortByAmountDown} from '../utils/sort.js';
 
 const BAR_HEIGHT = 55;
@@ -14,7 +14,7 @@ const renderTypeChart = (typeCtx, chartData) => {
     plugins: [ChartDataLabels],
     type: 'horizontalBar',
     data: {
-      labels: chartData.map((item) => item.type.split('').map((chart) => chart.toUpperCase()).join('')),
+      labels: chartData.map((item) => item.type.toUpperCase()),
       datasets: [{
         data: chartData.map((item) => item.amount),
         backgroundColor: '#ffffff',
@@ -84,7 +84,7 @@ const renderMoneyChart = (moneyCtx, chartData) => {
     plugins: [ChartDataLabels],
     type: 'horizontalBar',
     data: {
-      labels: chartData.map((item) => item.type.split('').map((chart) => chart.toUpperCase()).join('')),
+      labels: chartData.map((item) => item.type.toUpperCase()),
       datasets: [{
         data: chartData.map((item) => item.money),
         backgroundColor: '#ffffff',
@@ -154,7 +154,7 @@ const renderTimeSpendChart = (timeCtx, chartData) => {
     plugins: [ChartDataLabels],
     type: 'horizontalBar',
     data: {
-      labels: chartData.map((item) => item.type.split('').map((chart) => chart.toUpperCase()).join('')),
+      labels: chartData.map((item) => item.type.toUpperCase()),
       datasets: [{
         data: chartData.map((item) => item.timeSpend),
         backgroundColor: '#ffffff',
@@ -173,7 +173,7 @@ const renderTimeSpendChart = (timeCtx, chartData) => {
           color: '#000000',
           anchor: 'end',
           align: 'start',
-          formatter: (val) => calculateDurationFromMiliSeconds(val),
+          formatter: (val) => calculateDurationFromMilliseconds(val),
         },
       },
       title: {
@@ -231,7 +231,7 @@ const createStatisticsTemplate = () => (
   </section>`
 );
 
-export default class Statistics extends SmartView {
+class Statistics extends SmartView {
   constructor(pointsModel) {
     super();
     this._pointsModel = pointsModel;
@@ -249,9 +249,7 @@ export default class Statistics extends SmartView {
   }
 
   _setCharts() {
-    if (this._typeChart !== null) {
-      this._typeChart = null;
-    }
+    this._typeChart =  this._typeChart !== null ? null : this._typeChart;
 
     const typeCtx = this.getElement().querySelector('#type');
     const moneyCtx = this.getElement().querySelector('#money');
@@ -324,5 +322,6 @@ export default class Statistics extends SmartView {
 
     return spendTime;
   }
-
 }
+
+export {Statistics as default};

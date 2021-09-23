@@ -2,10 +2,10 @@ import AbstractView from './abstract.js';
 import {calculateDurationFromStartToEnd} from '../utils/date.js';
 import dayjs from 'dayjs';
 
-const createSelectedOffersListTemplate = (offersArray) => {
+const createSelectedOffersListTemplate = (offers) => {
   let selectedOffersList = '';
 
-  offersArray.forEach((offer) => {
+  offers.forEach((offer) => {
     if (offer.isChecked) {
       selectedOffersList += `<li class="event__offer">
       <span class="event__offer-title">${offer.title}</span>
@@ -36,7 +36,7 @@ const createPointTemplate = (event) => {
   const endTime = dayjs(dateTime.dateEnd).format('HH:mm');
   const startDate = dayjs(dateTime.dateStart).format('MMM DD');
   const duration = calculateDurationFromStartToEnd(dateTime.dateStart, dateTime.dateEnd);
-  const favotiteClass = isFavorite ? 'event__favorite-btn--active' : '';
+  const favoriteClass = isFavorite ? 'event__favorite-btn--active' : '';
 
 
   return `<li class="trip-events__item">
@@ -61,7 +61,7 @@ const createPointTemplate = (event) => {
       <ul class="event__selected-offers">
         ${offersList}
       </ul>
-      <button class="event__favorite-btn  ${favotiteClass}" type="button">
+      <button class="event__favorite-btn  ${favoriteClass}" type="button">
         <span class="visually-hidden">Add to favorite</span>
         <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
           <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z"/>
@@ -74,7 +74,7 @@ const createPointTemplate = (event) => {
   </li>`;
 };
 
-export default class Point extends AbstractView {
+class Point extends AbstractView {
   constructor (event) {
     super();
     this._event = event;
@@ -105,3 +105,5 @@ export default class Point extends AbstractView {
     this._callback.favoriteClick();
   }
 }
+
+export {Point as default};

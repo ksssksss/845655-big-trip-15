@@ -6,8 +6,10 @@ const createLoadingStatusTemplate = () => (
   </p>`
 );
 
-export default class Loading extends Abstract {
+class Loading extends Abstract {
   getTemplate() {
     return createLoadingStatusTemplate();
   }
 }
+
+export {Loading as default};
